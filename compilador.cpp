@@ -37,6 +37,15 @@ std::vector<std::vector<int>> transition_table = {
     {   ACP,ACP,ACP,ACP,ACP,ACP,ACP,ACP, ACP} // 13
 };
 
+std::vector<std::string> data_type = {"nulo", "ent", "dec", "palabra", "log"};
+std::vector<std::string> logic_operator = {"no", "y", "o"};
+std::vector<std::string> logic_controller = {"verdadero", "falso"};
+std::vector<std::string> key = {"const", "desde", "si", "hasta", "mientras", "ent", "dec", "regresa", "hacer", "palabra", "log", "nulo", "sino", "incr", "imprime", "imprimenl", "lee", "repite", "que"};
+std::vector<std::string> arithmetic_operator = {"+", "-", "*", "/", "%", "^"};
+std::vector<std::string> delimiter = {";", ",", "(", ")", "{", "}", "[", "]", ":"};
+std::vector<std::string> uni_delimiter = {" ", "\t", "\n"};
+std::string entry = "";
+
 int main(){
     std::cout << "hola mundo!";
 
