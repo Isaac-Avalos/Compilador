@@ -44,9 +44,9 @@ std::vector<std::vector<int>> transition_table = {
     {   ACP,ACP,ACP,ACP,ACP,ACP,ACP,ACP, ACP} // 13
 };
 
-// Prototipos de función
-void CompileError(std::string error_type, std::string desc);
-int ColChar(char x);
+// Prototipos de funciï¿½n
+void compileError(std::string error_type, std::string desc);
+int colChar(char x);
 
 int main(){
     std::cout << "hola mundo!";
@@ -54,13 +54,13 @@ int main(){
     return 0;
 }
 
-// Definición de las declaraciones de prototipo de función
-void CompileError(std::string error_type, std::string desc){
+// Definiciï¿½n de las declaraciones de prototipo de funciï¿½n
+void compileError(std::string error_type, std::string desc){
     std::cout << "[" << line << "]" << "[" << "]" << error_type << " " << desc << std::endl;
     cERR = true;
 }
 
-int ColChar(char x) {
+int colChar(char x) {
     if (x == '_' || isalpha(x)) {
         return 0;
     } else if (isdigit(x)) {
@@ -82,17 +82,16 @@ int ColChar(char x) {
     } else if (std::find(uni_delimiter.begin(), uni_delimiter.end(), std::string(1, x)) != uni_delimiter.end()) {
         return 15;
     } else {
-        CompileError("Error Lexico", std::string(1, x) + " simbolo no valido en alfabeto");
+        compileError("Error Lexico", std::string(1, x) + " simbolo no valido en alfabeto");
         return ERR;
     }
 }
 
-std::pair<std::string, std::string> Scanner() {
-    int estado = 0;
-    char c = '';
+std::pair<std::string, std::string> scanner() {
+    int status = 0;
 
-    while (idx < entry.length() && estado != ERR && estado != ACP) {
-        c = entry[idx];
+    while (idx < entry.length() && status != ERR && status != ACP) {
+        char c = entry[idx];
         idx++;
 
         if (c == '\n') {
@@ -102,72 +101,72 @@ std::pair<std::string, std::string> Scanner() {
             col++;
         }
 
-        col = colCar(c);
+        col = colChar(c);
 
-        if (estado == 0 && col == 15) {
+        if (status == 0 && col == 15) {
             continue;
         }
 
         if (col >= 0 && col <= 8 || col == 15) {
-            if (col == 15 && estado != 12) {
-                estado = ACP;
+            if (col == 15 && status != 12) {
+                status = ACP;
             }
 
             if (col >= 0 && col <= 8) {
-                estado = transition_table[estado][col];
+                status = transition_table[status][col];
             }
 
-            if (estado != ERR && estado != ACP && (col != 15 || (col == 15 && estado == 12))) {
-                int estA = estado;
+            if (status != ERR && status != ACP && (col != 15 || (col == 15 && status == 12))) {
+                int estA = status;
                 lexema += c;
             }
         }
     }
 
-    if (estado != ACP && estado != ERR) {
-        int estA = estado;
+    if (status != ACP && status != ERR) {
+        int estA = status;
     }
 
     std::string token = "Ntk";
 
-    if (estado == ACP && col != 15) {
+    if (status == ACP && col != 15) {
         idx--;
     }
 
-    if (estado != ERR && estado != ACP) {
-        int estA = estado;
+    if (status != ERR && status != ACP) {
+        int estA = status;
     }
 
-    if (key.find(lexema) != key.end()) {
+    if (std::find(key.begin(), key.end(), lexema) != key.end()) {
         token = "Res";
-    } else if (opl.find(lexema) != opl.end()) {
+    } else if (std::find(logic_operator.begin(), logic_operator.end(), lexema) != logic_operator.end()) {
         token = "OpL";
-    } else if (ctl.find(lexema) != ctl.end()) {
+    } else if (std::find(logic_controller.begin(), logic_controller.end(), lexema) != logic_controller.end()) {
         token = "CtL";
     } else {
         token = "Ide";
     }
 
-    int estA = estado;
+    int current_status = status;
 
-    if (estA == 2) {
+    if (current_status == 2) {
         token = "Ent";
-    } else if (estA == 4) {
+    } else if (current_status == 4) {
         token = "Dec";
-    } else if (estA == 5) {
+    } else if (current_status == 5) {
         token = "OpA";
-    } else if (estA == 6) {
+    } else if (current_status == 6) {
         token = "Del";
-    } else if (estA == 7) {
+    } else if (current_status == 7) {
         token = "OpS";
-    } else if (estA >= 8 && estA <= 11) {
+    } else if (current_status >= 8 && current_status <= 11) {
         token = "OpR";
-    } else if (estA == 13) {
+    } else if (current_status == 13) {
         token = "CtA";
     }
 
     if (token == "Ntk") {
-        cerr << "estA=" << estA << "estado=" << estado << std::endl;
+        std::cout << "current status=" << current_status << "status=" << status << std::endl;
     }
 
     return make_pair(token, lexema);
