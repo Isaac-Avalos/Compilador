@@ -9,9 +9,18 @@ int idx = 0;
 bool cERR = false;
 std::string token = "";
 std::string lexema = "";
-bool bPrinc = false;
+bool check_bool_main = false;
 int line = 1;
 int col = 1;
+
+void compileError(std::string error_type, std::string desc){
+    std::cout << "[" << line << "]" << "[" << "]" << error_type << " " << desc << std::endl;
+    cERR = true;
+}
+
+std::vector<std::vector<int>> transition_table = {
+
+};
 
 int main(){
     std::cout << "hola mundo!";
