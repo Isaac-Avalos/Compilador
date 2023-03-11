@@ -7,7 +7,7 @@
 
 const int ERR = -1;
 const int ACP = 99;
-int idx = 0;
+unsigned int idx = 0;
 bool cERR = false;
 std::string token = "";
 std::string lexema = "";
@@ -44,9 +44,10 @@ std::vector<std::vector<int>> transition_table = {
     {   ACP,ACP,ACP,ACP,ACP,ACP,ACP,ACP, ACP} // 13
 };
 
-// Prototipos de funci�n
+// Prototipos de funcion
 void compileError(std::string error_type, std::string desc);
 int colChar(char x);
+std::pair<std::string, std::string> scanner();
 
 int main(){
     std::cout << "hola mundo!";
@@ -54,7 +55,7 @@ int main(){
     return 0;
 }
 
-// Definici�n de las declaraciones de prototipo de funci�n
+// Definici�n de las declaraciones de prototipo de funcion
 void compileError(std::string error_type, std::string desc){
     std::cout << "[" << line << "]" << "[" << "]" << error_type << " " << desc << std::endl;
     cERR = true;
@@ -103,11 +104,11 @@ std::pair<std::string, std::string> scanner() {
 
         col = colChar(c);
 
-        if (status == 0 && col == 15) {
+        if ((status == 0) && (col == 15)) {
             continue;
         }
 
-        if (col >= 0 && col <= 8 || col == 15) {
+        if ((col >= 0 && col <= 8) || (col == 15)) {
             if (col == 15 && status != 12) {
                 status = ACP;
             }
