@@ -4,6 +4,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cstdio>
+#include <tuple> 
 
 const int ERR = -1;
 const int ACP = 99;
@@ -47,6 +48,8 @@ std::vector<std::vector<int>> transition_table = {
 // Prototipos de funci�n
 void compileError(std::string error_type, std::string desc);
 int colChar(char x);
+void constVars();
+void params();
 
 int main(){
     std::cout << "hola mundo!";
@@ -170,4 +173,12 @@ std::pair<std::string, std::string> scanner() {
     }
 
     return make_pair(token, lexema);
+}
+
+void constVars(){
+    std::tie(token,lexema) = scanner();
+}
+
+void params(){
+    std::tie(token,lexema) = scanner();
 }
