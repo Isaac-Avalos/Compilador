@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <cstring>
@@ -48,12 +49,45 @@ std::vector<std::vector<int>> transition_table = {
 // Prototipos de funcion
 void compileError(std::string error_type, std::string desc);
 int colChar(char x);
+std::pair<std::string, std::string> scanner();
 void constVars();
 void params();
-std::pair<std::string, std::string> scanner();
+void leer();
+void imprime();
+void imprimenl();
+void desde();
+void mientras();
+void si();
+void repite();
+void lmp();
+void regresa();
+void comand();
+void blockCommand();
+void statements();
+void blockFunction();
+void functions();
+void program();
+void parser();
 
 int main(){
-    std::cout << "hola mundo!";
+
+    std::string arche;
+    std::cout << "File (.icc) [.]=salir: ";
+    std::cin >> arche;
+    
+    if(arche == ".") return 0;
+    
+    std::ifstream archivo(arche);
+
+    std::string entry;
+    std::string linea;
+    while (std::getline(archivo,linea)){
+        entry += linea + "\n";
+    }
+
+    std::cout << entry << std::endl;
+    parser();
+    if(!cERR) std::cout << "El Programa se ha Compilado con Exito" << std::endl;
 
     return 0;
 }
@@ -182,4 +216,135 @@ void constVars(){
 
 void params(){
     std::tie(token,lexema) = scanner();
+}
+
+void leer() {
+    // Código para leer datos desde la entrada estándar
+}
+
+void imprime() {
+    // Código para imprimir un mensaje en la salida estándar sin salto de línea
+}
+
+void imprimenl() {
+    // Código para imprimir un mensaje en la salida estándar con salto de línea
+}
+
+void desde() {
+    //void desde(int inicio, int fin, int paso);
+    // Código para realizar un ciclo "desde" con inicio, fin y paso
+}
+
+void mientras() {
+    //void mientras(bool condicion);
+    // Código para realizar un ciclo "mientras" con una condición
+}
+
+void si() {
+    //void si(bool condicion);
+    // Código para realizar una estructura "si" con una condición
+}
+
+void repite() {
+    // Código para realizar un ciclo "repite"
+}
+
+void lmp() {
+    // Código para mostrar el contenido de una lista
+}
+
+void regresa() {
+    // Código para devolver un valor de una función
+}
+
+void comando() {
+    if (lexema == "lee") {
+        leer();
+    } else if (lexema == "imprime") {
+        imprime();
+    } else if (lexema == "imprimenl") {
+        imprimenl();
+    } else if (lexema == "desde") {
+        desde();
+    } else if (lexema == "mientras") {
+        mientras();
+    } else if (lexema == "si") {
+        si();
+    } else if (lexema == "repite") {
+        repite();
+    } else if (lexema == "lmp") {
+        lmp();
+    } else if (lexema == "regresa") {
+        regresa();
+    } else {
+        compileError("Error de Sintaxis", "comando no definido " + lexema);
+    }
+}
+
+void blockCommand() {
+    if (lexema != ";" && lexema != "{") {
+        comando();
+        std::tie(token, lexema) = scanner();
+        if (lexema != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lexema);
+    } else if (lexema == "{") {
+        statements();
+        if (lexema != "}") compileError("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lexema);
+        std::tie(token, lexema) = scanner();
+    }
+}
+
+void statements() {
+    while (lexema != ";") {
+        if (lexema != ";") comando();
+        std::tie(token, lexema) = scanner();
+        if (lexema != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lexema);
+        std::tie(token, lexema) = scanner();
+    }
+}
+
+void blockFunction() {
+    if (lexema != "{") compileError("Error de Sintaxis", "se esperaba abrir \"{\"");
+    std::tie(token, lexema) = scanner();
+    if (lexema != "}") statements();
+    if (lexema != "}") compileError("Error de Sintaxis", "se esperaba cerrar \"}\"");
+}
+
+void functions() {
+    if (!(std::find(data_type.begin(), data_type.end(), lexema) != data_type.end())) {
+        compileError("Error Sintactico", "Se esperaba tipo" + lexema);
+    }
+    std::tie(token, lexema) = scanner();
+    if (token != "Ide") {
+        compileError("Error Sintaxis", "Se esperaba Nombre Funcion y llego " + lexema);
+    }
+    if (check_bool_main) {
+        compileError("Error de Semantica", "La Funcion Principal ya esta definida");
+    }
+    if (lexema == "principal") {
+        check_bool_main = true;
+    }
+    std::tie(token, lexema) = scanner();
+    if (lexema != "(") {
+        compileError("Error de Sintaxis", "Se esperaba parentesis abierto \"(\"");
+    }
+    std::tie(token, lexema) = scanner();
+    if (lexema != ")") {
+        params();
+    }
+    if (lexema != ")") {
+        compileError("Error de Sintaxis", "Se esperaba parentesis cerrado \")\"");
+    }
+    std::tie(token, lexema) = scanner();
+    blockFunction();
+}
+
+void program(){
+    while (!entry.empty() && idx < entry.size()) {
+        constVars();
+        functions();
+    }
+}
+
+void parser(){
+    program();
 }
