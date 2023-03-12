@@ -1,0 +1,3 @@
+nulo principal() {
+   imprime("Dame numero: ");
+}

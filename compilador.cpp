@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <utility>
 #include <cstring>
 #include <algorithm>
 #include <cstdio>
@@ -11,11 +12,11 @@ const int ERR = -1;
 const int ACP = 99;
 unsigned int idx = 0;
 bool cERR = false;
-std::string token = "";
-std::string lexema = "";
+std::string tok = "";
+std::string lex = "";
 bool check_bool_main = false;
 int line = 1;
-int col = 1;
+int colu = 0;
 std::vector<std::string> data_type = {"nulo", "ent", "dec", "palabra", "log"};
 std::vector<std::string> logic_operator = {"no", "y", "o"};
 std::vector<std::string> logic_controller = {"verdadero", "falso"};
@@ -26,7 +27,7 @@ std::vector<std::string> key = {"const", "desde", "si", "hasta", "mientras",
 std::vector<std::string> arithmetic_operator = {"+", "-", "*", "/", "%", "^"};
 std::vector<std::string> delimiter = {";", ",", "(", ")", "{", "}", "[", "]", ":"};
 std::vector<std::string> uni_delimiter = {" ", "\t", "\n"};
-std::string entry = "";
+std::string entry;
 
 std::vector<std::vector<int>> transition_table = {
     // let  dig del opa <   >   =   .   "
@@ -50,6 +51,9 @@ std::vector<std::vector<int>> transition_table = {
 void compileError(std::string error_type, std::string desc);
 int colChar(char x);
 std::pair<std::string, std::string> scanner();
+void opno();
+void opy();
+void opo();
 void constVars();
 void params();
 void leer();
@@ -79,7 +83,6 @@ int main(){
     
     std::ifstream archivo(arche);
 
-    std::string entry;
     std::string linea;
     while (std::getline(archivo,linea)){
         entry += linea + "\n";
@@ -94,7 +97,7 @@ int main(){
 
 // Definici�n de las declaraciones de prototipo de funcion
 void compileError(std::string error_type, std::string desc){
-    std::cout << "[" << line << "]" << "[" << "]" << error_type << " " << desc << std::endl;
+    std::cout << "[" << line << "]" << "[" << colu << "]" << error_type << " " << desc << std::endl;
     cERR = true;
 }
 
@@ -127,13 +130,15 @@ int colChar(char x) {
 
 std::pair<std::string, std::string> scanner() {
     int status = 0;
+    int col = 0;
+    std::string lexema = "";
 
     while (idx < entry.length() && status != ERR && status != ACP) {
         char c = entry[idx];
         idx++;
 
         if (c == '\n') {
-            col = 1;
+            colu = 0;
             line++;
         } else {
             col++;
@@ -155,24 +160,28 @@ std::pair<std::string, std::string> scanner() {
             }
 
             if (status != ERR && status != ACP && (col != 15 || (col == 15 && status == 12))) {
-                int estA = status;
+                int current_status = status;
                 lexema += c;
+            }
+            if(c != '\n'){
+                colu++;
             }
         }
     }
 
     if (status != ACP && status != ERR) {
-        int estA = status;
+        int current_status = status;
     }
 
     std::string token = "Ntk";
 
     if (status == ACP && col != 15) {
         idx--;
+        colu--;
     }
 
     if (status != ERR && status != ACP) {
-        int estA = status;
+        int current_status = status;
     }
 
     if (std::find(key.begin(), key.end(), lexema) != key.end()) {
@@ -207,15 +216,35 @@ std::pair<std::string, std::string> scanner() {
         std::cout << "current status=" << current_status << "status=" << status << std::endl;
     }
 
-    return make_pair(token, lexema);
+    return std::make_pair(token, lexema);
+}
+
+void opno(){
+
+}
+
+void opy(){
+    std::string opr = "y";
+    while(opr == "y"){
+        opno();
+        opr = lex;
+    }
+}
+
+void expr(){
+    std::string opr = "o";
+    while(opr == "o"){
+        opy();
+        opr = lex;
+    }
 }
 
 void constVars(){
-    std::tie(token,lexema) = scanner();
+    std::tie(tok,lex) = scanner();
 }
 
 void params(){
-    std::tie(token,lexema) = scanner();
+    std::tie(tok,lex) = scanner();
 }
 
 void leer() {
@@ -258,83 +287,86 @@ void regresa() {
 }
 
 void comando() {
-    if (lexema == "lee") {
+    if (lex == "lee") {
         leer();
-    } else if (lexema == "imprime") {
+    } else if (lex == "imprime") {
         imprime();
-    } else if (lexema == "imprimenl") {
+    } else if (lex == "imprimenl") {
         imprimenl();
-    } else if (lexema == "desde") {
+    } else if (lex == "desde") {
         desde();
-    } else if (lexema == "mientras") {
+    } else if (lex == "mientras") {
         mientras();
-    } else if (lexema == "si") {
+    } else if (lex == "si") {
         si();
-    } else if (lexema == "repite") {
+    } else if (lex == "repite") {
         repite();
-    } else if (lexema == "lmp") {
+    } else if (lex == "lmp") {
         lmp();
-    } else if (lexema == "regresa") {
+    } else if (lex == "regresa") {
         regresa();
     } else {
-        compileError("Error de Sintaxis", "comando no definido " + lexema);
+        compileError("Error de Sintaxis", "comando no definido " + lex);
     }
 }
 
 void blockCommand() {
-    if (lexema != ";" && lexema != "{") {
+    std::tie(tok, lex) = scanner();
+    if (lex != ";" && lex != "{") {
         comando();
-        std::tie(token, lexema) = scanner();
-        if (lexema != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lexema);
-    } else if (lexema == "{") {
+        std::tie(tok, lex) = scanner();
+        if (lex != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lex);
+    } else if (lex == "{") {
         statements();
-        if (lexema != "}") compileError("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lexema);
-        std::tie(token, lexema) = scanner();
+        if (lex != "}") compileError("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lex);
+        std::tie(tok, lex) = scanner();
     }
 }
 
 void statements() {
-    while (lexema != ";") {
-        if (lexema != ";") comando();
-        std::tie(token, lexema) = scanner();
-        if (lexema != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lexema);
-        std::tie(token, lexema) = scanner();
+    std::tie(tok, lex) = scanner();
+    while (lex != ";") {
+        if (lex != ";") comando();
+        std::tie(tok, lex) = scanner();
+        if (lex != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lex);
+        std::tie(tok, lex) = scanner();
     }
 }
 
 void blockFunction() {
-    if (lexema != "{") compileError("Error de Sintaxis", "se esperaba abrir \"{\"");
-    std::tie(token, lexema) = scanner();
-    if (lexema != "}") statements();
-    if (lexema != "}") compileError("Error de Sintaxis", "se esperaba cerrar \"}\"");
+    if (lex != "{") compileError("Error de Sintaxis", "se esperaba abrir \"{\"");
+    std::tie(tok, lex) = scanner();
+    if (lex != "}") statements();
+    if (lex != "}") compileError("Error de Sintaxis", "se esperaba cerrar \"}\"");
 }
 
 void functions() {
-    if (!(std::find(data_type.begin(), data_type.end(), lexema) != data_type.end())) {
-        compileError("Error Sintactico", "Se esperaba tipo" + lexema);
+    std::cout << "Entro a Funcs" << std::endl;;
+    if (!(std::find(data_type.begin(), data_type.end(), lex) != data_type.end())) {
+        compileError("Error Sintactico", "Se esperaba tipo" + lex);
     }
-    std::tie(token, lexema) = scanner();
-    if (token != "Ide") {
-        compileError("Error Sintaxis", "Se esperaba Nombre Funcion y llego " + lexema);
+    std::tie(tok, lex) = scanner();
+    if (tok != "Ide") {
+        compileError("Error Sintaxis", "Se esperaba Nombre Funcion y llego " + lex);
     }
     if (check_bool_main) {
         compileError("Error de Semantica", "La Funcion Principal ya esta definida");
     }
-    if (lexema == "principal") {
+    if (lex == "principal") {
         check_bool_main = true;
     }
-    std::tie(token, lexema) = scanner();
-    if (lexema != "(") {
+    std::tie(tok, lex) = scanner();
+    if (lex != "(") {
         compileError("Error de Sintaxis", "Se esperaba parentesis abierto \"(\"");
     }
-    std::tie(token, lexema) = scanner();
-    if (lexema != ")") {
+    std::tie(tok, lex) = scanner();
+    if (lex != ")") {
         params();
     }
-    if (lexema != ")") {
+    if (lex != ")") {
         compileError("Error de Sintaxis", "Se esperaba parentesis cerrado \")\"");
     }
-    std::tie(token, lexema) = scanner();
+    std::tie(tok, lex) = scanner();
     blockFunction();
 }
 
