@@ -6,51 +6,53 @@
 #include <cstring>
 #include <algorithm>
 #include <cstdio>
-#include <tuple> 
+#include <tuple>
+
+using namespace std;
 
 const int ERR = -1;
 const int ACP = 99;
 unsigned int idx = 0;
 bool cERR = false;
-std::string tok = "";
-std::string lex = "";
+string tok = "";
+string lex = "";
 bool check_bool_main = false;
 int line = 1;
 int colu = 0;
-std::vector<std::string> data_type = {"nulo", "ent", "dec", "palabra", "log"};
-std::vector<std::string> logic_operator = {"no", "y", "o"};
-std::vector<std::string> logic_controller = {"verdadero", "falso"};
-std::vector<std::string> key = {"const", "desde", "si", "hasta", "mientras",
+vector<string> data_type = {"nulo", "ent", "dec", "palabra", "log"};
+vector<string> logic_operator = {"no", "y", "o"};
+vector<string> logic_controller = {"verdadero", "falso"};
+vector<string> key = {"const", "desde", "si", "hasta", "mientras",
                                 "ent", "dec", "regresa", "hacer", "palabra",
                                 "log", "nulo", "sino", "incr", "imprime",
                                 "imprimenl", "lee", "repite", "que"};
-std::vector<std::string> arithmetic_operator = {"+", "-", "*", "/", "%", "^"};
-std::vector<std::string> delimiter = {";", ",", "(", ")", "{", "}", "[", "]", ":"};
-std::vector<std::string> uni_delimiter = {" ", "\t", "\n"};
-std::string entry;
+vector<string> arithmetic_operator = {"+", "-", "*", "/", "%", "^"};
+vector<string> delimiter = {";", ",", "(", ")", "{", "}", "[", "]", ":"};
+vector<string> uni_delimiter = {" ", "\t", "\n"};
+string entry;
 
-std::vector<std::vector<int>> transition_table = {
-    // let  dig del opa <   >   =   .   "
-    {   1,  2,  6,  5,  10, 8,  7, ERR, 12}, //0
-    {   1,  1, ACP, ACP,ACP,ACP,ACP,ACP,ACP}, // 1
-    {   ACP,2, ACP, ACP,ACP,ACP,ACP, 3, ACP}, // 2
-    {   ERR, 4,ERR,ERR,ERR,ERR,ERR,ERR, ERR}, // 3
-    {   ACP, 4, ACP,ACP,ACP,ACP,ACP,ACP, ACP}, // 4
-    {   ACP,ACP,ACP,ACP,ACP,ACP,ACP,ACP, ACP}, // 5
-    {   ACP,ACP,ACP,ACP,ACP,ACP,ACP,ACP, ACP}, // 6
-    {   ACP,ACP,ACP,ACP,ACP,ACP, 9, ACP, ACP}, // 7
-    {   ACP,ACP,ACP,ACP,ACP,ACP, 9, ACP, ACP}, // 8
-    {   ACP,ACP,ACP,ACP,ACP,ACP,ACP,ACP, ACP}, // 9
-    {   ACP,ACP,ACP,ACP,ACP, 11, 9, ACP, ACP}, // 10
-    {   ACP,ACP,ACP,ACP,ACP,ACP,ACP,ACP, ACP}, // 11
-    {   12,  12, 12, 12, 12, 12, 12, 12, 13}, // 12
-    {   ACP,ACP,ACP,ACP,ACP,ACP,ACP,ACP, ACP} // 13
+vector<vector<int>> transition_table = {
+    // let  dig del   opa   <    >    =     .    "
+    {   1,   2,   6,   5,   10,  8,   7,   ERR, 12 },  //0
+    {   1,   1,   ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 1
+    {   ACP, 2,   ACP, ACP, ACP, ACP, ACP, 3,   ACP},  // 2
+    {   ERR, 4,   ERR, ERR, ERR, ERR, ERR, ERR, ERR},  // 3
+    {   ACP, 4,   ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 4
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 5
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 6
+    {   ACP, ACP, ACP, ACP, ACP, ACP, 9,   ACP, ACP},  // 7
+    {   ACP, ACP, ACP, ACP, ACP, ACP, 9,   ACP, ACP},  // 8
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 9
+    {   ACP, ACP, ACP, ACP, ACP, 11,  9 ,  ACP, ACP},  // 10
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 11
+    {   12,  12,  12,  12,  12,  12,  12,  12,  13 },  // 12
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP}   // 13
 };
 
 // Prototipos de funcion
-void compileError(std::string error_type, std::string desc);
+void compileError(string error_type, string desc);
 int colChar(char x);
-std::pair<std::string, std::string> scanner();
+pair<string, string> scanner();
 void opno();
 void opy();
 void opo();
@@ -75,29 +77,29 @@ void parser();
 
 int main(){
 
-    std::string arche;
-    std::cout << "File (.icc) [.]=salir: ";
-    std::cin >> arche;
-    
-    if(arche == ".") return 0;
-    
-    std::ifstream archivo(arche);
+    string arche;
+    cout << "File (.icc) [.]=salir: ";
+    cin >> arche;
 
-    std::string linea;
-    while (std::getline(archivo,linea)){
+    if(arche == ".") return 0;
+
+    ifstream archivo(arche);
+
+    string linea;
+    while (getline(archivo,linea)){
         entry += linea + "\n";
     }
 
-    std::cout << entry << std::endl;
+    cout << entry << endl;
     parser();
-    if(!cERR) std::cout << "El Programa se ha Compilado con Exito" << std::endl;
+    if(!cERR) cout << "El Programa se ha Compilado con Exito" << endl;
 
     return 0;
 }
 
-// Definici�n de las declaraciones de prototipo de funcion
-void compileError(std::string error_type, std::string desc){
-    std::cout << "[" << line << "]" << "[" << colu << "]" << error_type << " " << desc << std::endl;
+// Definicion de las declaraciones de prototipo de funcion
+void compileError(string error_type, string desc){
+    cout << "[" << line << "]" << "[" << colu << "]" << error_type << " " << desc << endl;
     cERR = true;
 }
 
@@ -106,9 +108,9 @@ int colChar(char x) {
         return 0;
     } else if (isdigit(x)) {
         return 1;
-    } else if (std::find(delimiter.begin(), delimiter.end(), std::string(1, x)) != delimiter.end()) {
+    } else if (find(delimiter.begin(), delimiter.end(), string(1, x)) != delimiter.end()) {
         return 2;
-    } else if (std::find(arithmetic_operator.begin(), arithmetic_operator.end(), std::string(1, x)) != arithmetic_operator.end()) {
+    } else if (find(arithmetic_operator.begin(), arithmetic_operator.end(), string(1, x)) != arithmetic_operator.end()) {
         return 3;
     } else if (x == '<') {
         return 4;
@@ -120,18 +122,18 @@ int colChar(char x) {
         return 7;
     } else if (x == '"') {
         return 8;
-    } else if (std::find(uni_delimiter.begin(), uni_delimiter.end(), std::string(1, x)) != uni_delimiter.end()) {
+    } else if (find(uni_delimiter.begin(), uni_delimiter.end(), string(1, x)) != uni_delimiter.end()) {
         return 15;
     } else {
-        compileError("Error Lexico", std::string(1, x) + " simbolo no valido en alfabeto");
+        compileError("Error Lexico", string(1, x) + " simbolo no valido en alfabeto");
         return ERR;
     }
 }
 
-std::pair<std::string, std::string> scanner() {
+pair<string, string> scanner() {
     int status = 0;
     int col = 0;
-    std::string lexema = "";
+    string lexema = "";
 
     while (idx < entry.length() && status != ERR && status != ACP) {
         char c = entry[idx];
@@ -173,7 +175,7 @@ std::pair<std::string, std::string> scanner() {
         int current_status = status;
     }
 
-    std::string token = "Ntk";
+    string token = "Ntk";
 
     if (status == ACP && col != 15) {
         idx--;
@@ -184,11 +186,11 @@ std::pair<std::string, std::string> scanner() {
         int current_status = status;
     }
 
-    if (std::find(key.begin(), key.end(), lexema) != key.end()) {
+    if (find(key.begin(), key.end(), lexema) != key.end()) {
         token = "Res";
-    } else if (std::find(logic_operator.begin(), logic_operator.end(), lexema) != logic_operator.end()) {
+    } else if (find(logic_operator.begin(), logic_operator.end(), lexema) != logic_operator.end()) {
         token = "OpL";
-    } else if (std::find(logic_controller.begin(), logic_controller.end(), lexema) != logic_controller.end()) {
+    } else if (find(logic_controller.begin(), logic_controller.end(), lexema) != logic_controller.end()) {
         token = "CtL";
     } else {
         token = "Ide";
@@ -213,10 +215,10 @@ std::pair<std::string, std::string> scanner() {
     }
 
     if (token == "Ntk") {
-        std::cout << "current status=" << current_status << "status=" << status << std::endl;
+        cout << "current status=" << current_status << "status=" << status << endl;
     }
 
-    return std::make_pair(token, lexema);
+    return make_pair(token, lexema);
 }
 
 void opno(){
@@ -224,7 +226,7 @@ void opno(){
 }
 
 void opy(){
-    std::string opr = "y";
+    string opr = "y";
     while(opr == "y"){
         opno();
         opr = lex;
@@ -232,7 +234,7 @@ void opy(){
 }
 
 void expr(){
-    std::string opr = "o";
+    string opr = "o";
     while(opr == "o"){
         opy();
         opr = lex;
@@ -240,11 +242,11 @@ void expr(){
 }
 
 void constVars(){
-    std::tie(tok,lex) = scanner();
+    tie(tok,lex) = scanner();
 }
 
 void params(){
-    std::tie(tok,lex) = scanner();
+    tie(tok,lex) = scanner();
 }
 
 void leer() {
@@ -311,41 +313,41 @@ void comando() {
 }
 
 void blockCommand() {
-    std::tie(tok, lex) = scanner();
+    tie(tok, lex) = scanner();
     if (lex != ";" && lex != "{") {
         comando();
-        std::tie(tok, lex) = scanner();
+        tie(tok, lex) = scanner();
         if (lex != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lex);
     } else if (lex == "{") {
         statements();
         if (lex != "}") compileError("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lex);
-        std::tie(tok, lex) = scanner();
+        tie(tok, lex) = scanner();
     }
 }
 
 void statements() {
-    std::tie(tok, lex) = scanner();
+    tie(tok, lex) = scanner();
     while (lex != ";") {
         if (lex != ";") comando();
-        std::tie(tok, lex) = scanner();
+        tie(tok, lex) = scanner();
         if (lex != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lex);
-        std::tie(tok, lex) = scanner();
+        tie(tok, lex) = scanner();
     }
 }
 
 void blockFunction() {
     if (lex != "{") compileError("Error de Sintaxis", "se esperaba abrir \"{\"");
-    std::tie(tok, lex) = scanner();
+    tie(tok, lex) = scanner();
     if (lex != "}") statements();
     if (lex != "}") compileError("Error de Sintaxis", "se esperaba cerrar \"}\"");
 }
 
 void functions() {
-    std::cout << "Entro a Funcs" << std::endl;;
-    if (!(std::find(data_type.begin(), data_type.end(), lex) != data_type.end())) {
+    cout << "Entro a Funcs" << endl;;
+    if (!(find(data_type.begin(), data_type.end(), lex) != data_type.end())) {
         compileError("Error Sintactico", "Se esperaba tipo" + lex);
     }
-    std::tie(tok, lex) = scanner();
+    tie(tok, lex) = scanner();
     if (tok != "Ide") {
         compileError("Error Sintaxis", "Se esperaba Nombre Funcion y llego " + lex);
     }
@@ -355,18 +357,18 @@ void functions() {
     if (lex == "principal") {
         check_bool_main = true;
     }
-    std::tie(tok, lex) = scanner();
+    tie(tok, lex) = scanner();
     if (lex != "(") {
         compileError("Error de Sintaxis", "Se esperaba parentesis abierto \"(\"");
     }
-    std::tie(tok, lex) = scanner();
+    tie(tok, lex) = scanner();
     if (lex != ")") {
         params();
     }
     if (lex != ")") {
         compileError("Error de Sintaxis", "Se esperaba parentesis cerrado \")\"");
     }
-    std::tie(tok, lex) = scanner();
+    tie(tok, lex) = scanner();
     blockFunction();
 }
 
