@@ -10,6 +10,7 @@
 
 using namespace std;
 
+// Variables Globales
 const int ERR = -1;
 const int ACP = 99;
 unsigned int idx = 0;
@@ -22,14 +23,14 @@ int colu = 0;
 vector<string> data_type = {"nulo", "ent", "dec", "palabra", "log"};
 vector<string> logic_operator = {"no", "y", "o"};
 vector<string> logic_controller = {"verdadero", "falso"};
-vector<string> key = {"const", "desde", "si", "hasta", "mientras",
-                                "ent", "dec", "regresa", "hacer", "palabra",
-                                "log", "nulo", "sino", "incr", "imprime",
-                                "imprimenl", "lee", "repite", "que"};
 vector<string> arithmetic_operator = {"+", "-", "*", "/", "%", "^"};
 vector<string> delimiter = {";", ",", "(", ")", "{", "}", "[", "]", ":"};
 vector<string> uni_delimiter = {" ", "\t", "\n"};
 string entry;
+vector<string> key = {"const", "desde", "si", "hasta", "mientras",
+                      "ent", "dec", "regresa", "hacer", "palabra",
+                      "log", "nulo", "sino", "incr", "imprime",
+                      "imprimenl", "lee", "repite", "que"};
 
 vector<vector<int>> transition_table = {
     // let  dig del   opa   <    >    =     .    "
@@ -53,20 +54,20 @@ vector<vector<int>> transition_table = {
 void compileError(string error_type, string desc);
 int colChar(char x);
 pair<string, string> scanner();
-void opno();
+void opno(); // FALTA
 void opy();
-void opo();
-void constVars();
-void params();
-void leer();
-void imprime();
-void imprimenl();
-void desde();
-void mientras();
-void si();
-void repite();
-void lmp();
-void regresa();
+void expr();
+void constVars(); // FALTA
+void params(); // FALTA
+void leer(); // FALTA
+void imprime(); // FALTA
+void imprimenl(); // FALTA
+void desde(); // FALTA
+void mientras(); // FALTA
+void si(); // FALTA
+void repite(); // FALTA
+void lmp(); // FALTA
+void regresa(); // FALTA
 void comand();
 void blockCommand();
 void statements();
@@ -75,6 +76,7 @@ void functions();
 void program();
 void parser();
 
+// Ejecucion del main
 int main(){
 
     string arche;
@@ -97,7 +99,7 @@ int main(){
     return 0;
 }
 
-// Definicion de las declaraciones de prototipo de funcion
+// Definicion de las funciones
 void compileError(string error_type, string desc){
     cout << "[" << line << "]" << "[" << colu << "]" << error_type << " " << desc << endl;
     cERR = true;
@@ -288,7 +290,7 @@ void regresa() {
     // Código para devolver un valor de una función
 }
 
-void comando() {
+void comand() {
     if (lex == "lee") {
         leer();
     } else if (lex == "imprime") {
