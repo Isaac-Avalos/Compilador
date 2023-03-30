@@ -45,65 +45,7 @@ int matran[14][9] = {
     {ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP} //13
 };
 
-// Prototipado de funciones
-void erra(string terr, string desc);
-int colCar(char x);
-pair<string, string> scanner();
-void cte();
-void termino();
-void signo();
-void expo();
-void multi();
-void suma();
-void oprel();
-void opno();
-void opy();
-void expr();
-void constVars();
-void params();
-void gpoExp();
-void leer(); // no
-void imprime(); // no
-void imprimenl(); // no
-void desde(); // no
-void mientras(); // no
-void si(); // no
-void repite(); // no
-void lmp(); // no
-void regresa(); // no
-void comando();
-void blkcmd();
-void estatutos();
-void blkFunc();
-void funcs();
-void prgm();
-void parser();
-
-// -------------------------------------------------------------
-// Funcion principal
-int main() {
-    string arche = "";
-    cout << "Archivo (.icc) [.] = salir: ";
-    cin >> arche;
-    if (arche == ".") exit(0);
-    ifstream archivo(arche);
-
-    // Carga de archivo en entrada
-    string entrada = "";
-    string linea = "";
-    while (getline(archivo, linea)) {
-        entrada += linea + "\n";
-    }
-
-    cout << entrada << endl;
-    parser();
-    if (!cERR) cout << "Programa COMPILO con EXITO" << endl;
-
-    return 0;
-}
-// -------------------------------------------------------------
-
-// Definicion de los prototipos de funcion
+// Definicion de funciones
 void erra(string terr, string desc) {
     cERR;
     cout << '[' << ren << ']' << '[' << colu << ']' << terr << desc << endl;
@@ -444,3 +386,28 @@ void prgm() {
 void parser() {
     prgm();
 }
+
+
+// -------------------------------------------------------------
+// Funcion principal
+int main() {
+    string arche = "";
+    cout << "Archivo (.icc) [.] = salir: ";
+    cin >> arche;
+    if (arche == ".") exit(0);
+    ifstream archivo(arche);
+
+    // Carga de archivo en entrada
+    string entrada = "";
+    string linea = "";
+    while (getline(archivo, linea)) {
+        entrada += linea + "\n";
+    }
+
+    cout << entrada << endl;
+    parser();
+    if (!cERR) cout << "Programa COMPILO con EXITO" << endl;
+
+    return 0;
+}
+// -------------------------------------------------------------
