@@ -1,419 +1,457 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
-#include <utility>
-#include <cstring>
 #include <algorithm>
-#include <cstdio>
-#include <tuple>
+#include <utility>
 
 using namespace std;
 
-// Variables Globales
+// Todas las variables necesarias
 const int ERR = -1;
 const int ACP = 99;
-unsigned int idx = 0;
+int idx = 0;
 bool cERR = false;
-string tok = "";
-string lex = "";
-bool check_bool_main = false;
-int line = 1;
+char tok = '';
+string lex = '';
+bool bPrinc = false;
+int ren = 1;
 int colu = 0;
-vector<string> data_type = {"nulo", "ent", "dec", "palabra", "log"};
-vector<string> logic_operator = {"no", "y", "o"};
-vector<string> logic_controller = {"verdadero", "falso"};
-vector<string> arithmetic_operator = {"+", "-", "*", "/", "%", "^"};
-vector<string> delimiter = {";", ",", "(", ")", "{", "}", "[", "]", ":"};
-vector<string> uni_delimiter = {" ", "\t", "\n"};
-string entry;
-vector<string> key = {"const", "desde", "si", "hasta", "mientras",
-                      "ent", "dec", "regresa", "hacer", "palabra",
-                      "log", "nulo", "sino", "incr", "imprime",
-                      "imprimenl", "lee", "repite", "que"};
-
-vector<vector<int>> transition_table = {
-    // let  dig del   opa   <    >    =     .    "
-    {   1,   2,   6,   5,   10,  8,   7,   ERR, 12 },  //0
-    {   1,   1,   ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 1
-    {   ACP, 2,   ACP, ACP, ACP, ACP, ACP, 3,   ACP},  // 2
-    {   ERR, 4,   ERR, ERR, ERR, ERR, ERR, ERR, ERR},  // 3
-    {   ACP, 4,   ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 4
-    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 5
-    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 6
-    {   ACP, ACP, ACP, ACP, ACP, ACP, 9,   ACP, ACP},  // 7
-    {   ACP, ACP, ACP, ACP, ACP, ACP, 9,   ACP, ACP},  // 8
-    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 9
-    {   ACP, ACP, ACP, ACP, ACP, 11,  9 ,  ACP, ACP},  // 10
-    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 11
-    {   12,  12,  12,  12,  12,  12,  12,  12,  13 },  // 12
-    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP}   // 13
+string tipo[5] = {"nulo", "entero", "decimal", "palabra", "logico"};
+string opl[3] = {"no", "y", "o"};
+string ctl[2] = {"verdadero", "falso"};
+string key[20] = {"constante", "desde", "si", "hasta", "mientras", "entero", "decimal", "regresa", "hacer",
+      "palabra", "logico", "nulo", "sino", "incr" "imprime", "imprimenl", "lee", "repite", "que"};
+char opar[6] = {'+', '-', '*', '/', '%', '^'};
+char deli[9] = {';', ',', '(',')', '{', '}', '[', ']', ':'};
+char delu[3] = {' ', '\t', '\n'};
+char opRl[5] = {'<', '>', '<=', '>=', '<>'};
+string tkCts[4] = {"Ent", "Dec", "CtA", "CtL"};
+string entrada = "";
+int matran[14][9] = {
+    //let  dig  del  opa   <    >    =    .   "
+    {1,   2,   6,   5,    10,  8,   7,  ERR, 12}, //0
+    {1,   1,   ACP, ACP, ACP, ACP, ACP, ACP,ACP}, //1
+    {ACP, 2,   ACP, ACP, ACP, ACP, ACP,  3, ACP}, //2
+    {ERR, 4,   ERR, ERR, ERR, ERR, ERR, ERR,ERR}, //3
+    {ACP, 4,   ACP, ACP, ACP, ACP, ACP, ACP,ACP}, //4
+    {ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,ACP}, //5
+    {ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,ACP}, //6
+    {ACP, ACP, ACP, ACP, ACP, ACP,  9 ,ACP ,ACP}, //7
+    {ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,9 ,ACP ,ACP}, //8
+    {ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP}, //9
+    {ACP ,ACP ,ACP ,ACP ,ACP ,11 ,9 ,ACP ,ACP}, //10
+    {ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP}, //11
+    {12 ,12 ,12 ,12 ,12 ,12 ,12 ,12 ,13}, //12
+    {ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP} //13
 };
 
-// Prototipos de funcion
-void compileError(string error_type, string desc);
-int colChar(char x);
+// Prototipado de funciones
+void erra(string terr, string desc);
+int colCar(char x);
 pair<string, string> scanner();
-void opno(); // FALTA
+void cte();
+void termino();
+void signo();
+void expo();
+void multi();
+void suma();
+void oprel();
+void opno();
 void opy();
 void expr();
-void constVars(); // FALTA
-void params(); // FALTA
-void leer(); // FALTA
-void imprime(); // FALTA
-void imprimenl(); // FALTA
-void desde(); // FALTA
-void mientras(); // FALTA
-void si(); // FALTA
-void repite(); // FALTA
-void lmp(); // FALTA
-void regresa(); // FALTA
-void comand();
-void blockCommand();
-void statements();
-void blockFunction();
-void functions();
-void program();
+void constVars();
+void params();
+void gpoExp();
+void leer(); // no
+void imprime(); // no
+void imprimenl(); // no
+void desde(); // no
+void mientras(); // no
+void si(); // no
+void repite(); // no
+void lmp(); // no
+void regresa(); // no
+void comando();
+void blkcmd();
+void estatutos();
+void blkFunc();
+void funcs();
+void prgm();
 void parser();
 
-// Ejecucion del main
-int main(){
-
-    string arche;
-    cout << "File (.icc) [.]=salir: ";
+// -------------------------------------------------------------
+// Funcion principal
+int main() {
+    string arche = "";
+    cout << "Archivo (.icc) [.] = salir: ";
     cin >> arche;
-
-    if(arche == ".") return 0;
-
+    if (arche == ".") exit(0);
     ifstream archivo(arche);
 
-    string linea;
-    while (getline(archivo,linea)){
-        entry += linea + "\n";
+    // Carga de archivo en entrada
+    string entrada = "";
+    string linea = "";
+    while (getline(archivo, linea)) {
+        entrada += linea + "\n";
     }
 
-    cout << entry << endl;
+    cout << entrada << endl;
     parser();
-    if(!cERR) cout << "El Programa se ha Compilado con Exito" << endl;
+    if (!cERR) cout << "Programa COMPILO con EXITO" << endl;
 
     return 0;
 }
+// -------------------------------------------------------------
 
-// Definicion de las funciones
-void compileError(string error_type, string desc){
-    cout << "[" << line << "]" << "[" << colu << "]" << error_type << " " << desc << endl;
+// Definicion de los prototipos de funcion
+void erra(string terr, string desc) {
+    global ren, colu;
+    global cERR;
+    cout << '[' << ren << ']' << '[' << colu << ']' << terr << desc << endl;
     cERR = true;
 }
 
-int colChar(char x) {
-    if (x == '_' || isalpha(x)) {
-        return 0;
-    } else if (isdigit(x)) {
-        return 1;
-    } else if (find(delimiter.begin(), delimiter.end(), string(1, x)) != delimiter.end()) {
-        return 2;
-    } else if (find(arithmetic_operator.begin(), arithmetic_operator.end(), string(1, x)) != arithmetic_operator.end()) {
-        return 3;
-    } else if (x == '<') {
-        return 4;
-    } else if (x == '>') {
-        return 5;
-    } else if (x == '=') {
-        return 6;
-    } else if (x == '.') {
-        return 7;
-    } else if (x == '"') {
-        return 8;
-    } else if (find(uni_delimiter.begin(), uni_delimiter.end(), string(1, x)) != uni_delimiter.end()) {
-        return 15;
-    } else {
-        compileError("Error Lexico", string(1, x) + " simbolo no valido en alfabeto");
-        return ERR;
-    }
+int colCar(char x) {
+    if (x == '_' || isalpha(x)) return 0;
+    if (isdigit(x)) return 1;
+    if (find(deli, deli+9, x) != deli+9) return 2;
+    if (find(opar, opar+6, x) != opar+6) return 3;
+    if (x == '<') return 4;
+    if (x == '>') return 5;
+    if (x == '=') return 6;
+    if (x == '.') return 7;
+    if (x == '"') return 8;
+    if (find(delu, delu+3, x) != delu+3) return 15;
+    erra("Error Lexico", x + " simbolo no valido en Alfabeto");
+    return ERR;
 }
 
 pair<string, string> scanner() {
-    int status = 0;
-    int col = 0;
+    global entrada, ERR, ACP, idx, ren, colu;
+    int estado = 0;
     string lexema = "";
-
-    while (idx < entry.length() && status != ERR && status != ACP) {
-        char c = entry[idx];
-        idx++;
-
+    char c = "";
+    int col = 0;
+    while (idx < entrada.length() && estado != ERR && estado != ACP) {
+        c = entrada[idx];
+        idx = idx + 1;
         if (c == '\n') {
             colu = 0;
-            line++;
-        } else {
-            col++;
+            ren = ren + 1;
         }
 
-        col = colChar(c);
-
-        if ((status == 0) && (col == 15)) {
+        col = colCar(c);
+        if (estado == 0 && col == 15) {
             continue;
         }
-
-        if ((col >= 0 && col <= 8) || (col == 15)) {
-            if (col == 15 && status != 12) {
-                status = ACP;
+        if (col >= 0 && col <= 8 || col == 15) {
+            if (col == 15 && estado != 12) {
+                estado = ACP;
+            }
+            if (col >=0 && col <= 8) {
+                estado = matran[estado][col];
+            }
+            if (estado != ERR && estado != ACP && col != 15 || col == 15 && estado == 12) {
+                estA = estado;
+                lexema = lexema + c;
             }
 
-            if (col >= 0 && col <= 8) {
-                status = transition_table[status][col];
-            }
-
-            if (status != ERR && status != ACP && (col != 15 || (col == 15 && status == 12))) {
-                int current_status = status;
-                lexema += c;
-            }
-            if(c != '\n'){
-                colu++;
-            }
+            if (c != '\n') colu = colu + 1;
         }
     }
-
-    if (status != ACP && status != ERR) {
-        int current_status = status;
-    }
-
+    if (estado != ACP && estado != ERR) estA = estado;
     string token = "Ntk";
-
-    if (status == ACP && col != 15) {
-        idx--;
-        colu--;
+    if (estado == ACP && col != 15) {
+        idx = idx - 1;
+        colu = colu - 1;
     }
 
-    if (status != ERR && status != ACP) {
-        int current_status = status;
+    if (estado != ERR && estado != ACP) {
+        estA = estado;
     }
 
-    if (find(key.begin(), key.end(), lexema) != key.end()) {
-        token = "Res";
-    } else if (find(logic_operator.begin(), logic_operator.end(), lexema) != logic_operator.end()) {
-        token = "OpL";
-    } else if (find(logic_controller.begin(), logic_controller.end(), lexema) != logic_controller.end()) {
-        token = "CtL";
-    } else {
-        token = "Ide";
-    }
+    if (find(key, key+20, lexema) != key+20) token = "Res";
+    else if (find(opl, opl+3, lexema) != opl+3) token = "OpL";
+    else if (find(ctl, ctl+2, lexema) != ctl+2) token = "CtL";
+    else token = "Ide";
 
-    int current_status = status;
-
-    if (current_status == 2) {
-        token = "Ent";
-    } else if (current_status == 4) {
-        token = "Dec";
-    } else if (current_status == 5) {
-        token = "OpA";
-    } else if (current_status == 6) {
-        token = "Del";
-    } else if (current_status == 7) {
-        token = "OpS";
-    } else if (current_status >= 8 && current_status <= 11) {
-        token = "OpR";
-    } else if (current_status == 13) {
-        token = "CtA";
-    }
+    if (estA == 2) token = "Ent";
+    else if (estA == 4) token = "Dec";
+    else if (estA == 5) token = "OpA";
+    else if (estA == 6) token = "Del";
+    else if (estA == 7) token = "OpS";
+    else if (estA in {8, 9 , 10 , 11}) token = "OpR";
+    else if (estA == 13) token = "CtA";
 
     if (token == "Ntk") {
-        cout << "current status=" << current_status << "status=" << status << endl;
+        cout << "estA=" << estA << "estado=" << estado << endl;
     }
 
     return make_pair(token, lexema);
 }
 
-void opno(){
-
+void cte() {
+    global tok, lex;
+    if (find(tkCts, tkCts+4, tok) == tkCts+4) {
+        erra("Error de sintaxis", "se esperaba Cte y llego " + lex);
+    }
 }
 
-void opy(){
+void termino() {
+    global lex, tok;
+    if (lex != '(' && tok != "Ide" && tok != "CtA" && tok != "CtL" && tok != "Ent" && tok != "Dec") {
+        tie(tok, lex) = scanner();
+    }
+    if (lex == '(') {
+        tie(tok, lex) = scanner();
+        expr();
+        if (lex != ')') {
+            erra("Error de Sintaxis", "se espera cerrar ) y llego " + lex);
+        }
+    }
+    else if (tok == "Ide") {
+        tie(tok, lex) = scanner();
+        if (lex == '[') {
+            tie(tok, lex) = scanner();
+            expr();
+            if (lex != ']') {
+                erra("Error Sintaxis", "se esperaba cerrar ] y llego " + lex);
+            }
+        }
+    }
+    else if (tok == "CtL" || tok == "CtA" || tok == "Dec" || tok == "Ent") {
+        cte();
+    }
+    if (lex != ')') {
+        tie(tok, lex) = scanner();
+    }
+}
+
+void signo() {
+    global lex, tok;
+    if (lex == '-') {
+        tie(tok, lex) = scanner();
+    }
+    termino();
+}
+
+void expo() {
+    global tok, lex;
+    char opr = '^';
+    while (opr == '^') {
+        signo();
+        opr = lex;
+    }
+}
+
+void multi() {
+    global tok, lex;
+    char opr = '*';
+    while (opr == '*' || opr == '/' || opr == '%') {
+        expo();
+        opr = lex;
+    }
+}
+
+void suma() {
+    global tok, lex;
+    char opr = '+';
+    while (opr == '+' || opr == '-') {
+        multi();
+        opr = lex;
+    }
+}
+
+void oprel() {
+    global tok, lex;
+    char opr = '<';
+    while (find(opRl, opRl+5, opr) != opRl+5) {
+        suma();
+        opr = lex;
+    }
+}
+
+void opno() {
+    global lex, tok;
+    if (lex == "no") {
+        tie(tok, lex) = scanner();
+    }
+    oprel();
+}
+
+void opy() {
+    global tok, lex;
     string opr = "y";
-    while(opr == "y"){
+    while (opr == "y") {
         opno();
         opr = lex;
     }
 }
 
-void expr(){
+void expr() {
+    global tok, lex;
     string opr = "o";
-    while(opr == "o"){
+    while (opr == "o") {
         opy();
         opr = lex;
     }
 }
 
-void constVars(){
-    tie(tok,lex) = scanner();
+void constVars() {
+    global entrada, idx, tok, lex;
+    tie(tok, lex) = scanner();
 }
 
-void params(){
-    tie(tok,lex) = scanner();
+void params() {
+    global entrada, lex, tok;
+    tie(tok, lex) = scanner();
+}
+
+void gpoExp() {
+    global tok, lex;
+    if (lex != ')') {
+        char deli = ',';
+        while (deli == ',') {
+            if (lex == ',') {
+                tie(tok, lex) = scanner();
+            }
+            expr();
+            deli = lex;
+        }
+    }
 }
 
 void leer() {
-    // Código para leer datos desde la entrada estándar
+
 }
 
 void imprime() {
-    // Código para imprimir un mensaje en la salida estándar sin salto de línea
+    global tok, lex;
+    tie(tok, lex) = scanner();
+    if (lex != '(') {
+        erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
+    }
+    tie(tok, lex) = scanner();
+    if (lex != ')') gpoExp();
+    if (lex != ')') tie(tok, lex) = scanner();
+    if (lex != ')') {
+        erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lex);
+    }
 }
 
 void imprimenl() {
-    // Código para imprimir un mensaje en la salida estándar con salto de línea
+    global tok, lex;
+    tie(tok, lex) = scanner();
+    if (lex != '(') {
+        erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
+    }
+    tie(tok, lex) = scanner();
+    if (lex != ')') gpoExp();
+    if (lex != ')') tie(tok, lex) = scanner();
+    if (lex != ')') {
+        erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lex);
+    }
 }
 
 void desde() {
-    //void desde(int inicio, int fin, int paso);
-    // Código para realizar un ciclo "desde" con inicio, fin y paso
+
 }
 
 void mientras() {
-    //void mientras(bool condicion);
-    // Código para realizar un ciclo "mientras" con una condición
+
 }
 
 void si() {
-    //void si(bool condicion);
-    // Código para realizar una estructura "si" con una condición
+
 }
 
 void repite() {
-    // Código para realizar un ciclo "repite"
+
 }
 
 void lmp() {
-    // Código para mostrar el contenido de una lista
+
 }
 
 void regresa() {
-    // Código para devolver un valor de una función
+
 }
 
-void comand() {
-    if (lex == "lee") {
-        leer();
-    } else if (lex == "imprime") {
-        imprime();
-    } else if (lex == "imprimenl") {
-        imprimenl();
-    } else if (lex == "desde") {
-        desde();
-    } else if (lex == "mientras") {
-        mientras();
-    } else if (lex == "si") {
-        si();
-    } else if (lex == "repite") {
-        repite();
-    } else if (lex == "lmp") {
-        lmp();
-    } else if (lex == "regresa") {
-        regresa();
-    } else {
-        compileError("Error de Sintaxis", "comando no definido " + lex);
-    }
-}
-
-void blockCommand() {
+void comando() {
+    global tok, lex;
+    if (tok == "Ide") asigLfunc();
+    if (lex == "lee") leer();
+    else if (lex == "imprime") imprime();
+    else if (lex == "imprimenl") imprimenl();
+    else if (lex == "desde") desde();
+    else if (lex == "mientras") mientras();
+    else if (lex == "si") si();
+    else if (lex == "repite") repite();
+    else if (lex == "lmp") lmp();
+    else if (lex == "regresa") regresa();
+    else erra("Error de Sintaxis", "comando no definido " + lex);
     tie(tok, lex) = scanner();
-    if (lex != ";" && lex != "{") {
+}
+
+void blkcmd() {
+    global lex, tok;
+    tie(tok, lex) = scanner();
+    if (lex != ';' && lex != '{') {
         comando();
         tie(tok, lex) = scanner();
-        if (lex != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lex);
-    } else if (lex == "{") {
-        statements();
-        if (lex != "}") compileError("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lex);
+        if (lex != ';') erra("Error de Sintaxis", "se esperaba ; y llego " + lex);
+    }
+    else if (lex == '{') {
+        estatutos();
+        if (lex != '}') erra("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lex);
+    }
+}
+
+void estatutos() {
+    global tok, lex;
+    char cbk = '{';
+    while (cbk != '}') {
+        if (lex != ';') comando();
+        if (lex != ';') erra("Error de Sintaxis", "se esperaba ; y llego " + lex);
         tie(tok, lex) = scanner();
+        cbk = lex;
     }
 }
 
-void statements() {
+void blkFunc() {
+    global lex, tok;
+    if (lex != '{') erra("Error de Sintaxis", "se esperaba abrir \"{\" y llego " + lex);
     tie(tok, lex) = scanner();
-    while (lex != ";") {
-        if (lex != ";") comando();
-        tie(tok, lex) = scanner();
-        if (lex != ";") compileError("Error de Sintaxis", "se esperaba ; y llego " + lex);
-        tie(tok, lex) = scanner();
-    }
+    if (lex != '}') estatutos();
+    if (lex != '}') erra("Error de Sintaxis", "se esperaba cerrar \"}\" y llego " + lex);
 }
 
-void blockFunction() {
-    if (lex != "{") compileError("Error de Sintaxis", "se esperaba abrir \"{\"");
+void funcs() {
+    global entrada, idx, tok, lex, tipo, bPrinc;
+    if (find(tipo, tipo+5, lex) == tipo+5) {
+        erra("Error Sintactico", "Se esperaba tipo" + str(tipo));
+    }
     tie(tok, lex) = scanner();
-    if (lex != "}") statements();
-    if (lex != "}") compileError("Error de Sintaxis", "se esperaba cerrar \"}\"");
+    if (tok != "Ide") erra("Error Sintaxis", "Se esperaba Nombre Funcion y llego " + lex);
+    if (bPrinc) erra("Error de Semantica", "la Funcion Principal ya esta definida");
+    if (lex == "principal") bPrinc = true;
+    tie(tok, lex) = scanner();
+    if (lex != '(') erra("Error de Sintaxis", "se esperaba parentisis abierto \"(\" y llego " + lex);
+    tie(tok, lex) = scanner();
+    if (lex != ')') params();
+    if (lex != ')') erra("Error de Sintaxis", "se esperaba parentisis cerrado \")\"");
+    tie(tok, lex) = scanner();
+    blkFunc();
 }
 
-void functions() {
-    cout << "Entro a Funcs" << endl;;
-    if (!(find(data_type.begin(), data_type.end(), lex) != data_type.end())) {
-        compileError("Error Sintactico", "Se esperaba tipo" + lex);
-    }
-    tie(tok, lex) = scanner();
-    if (tok != "Ide") {
-        compileError("Error Sintaxis", "Se esperaba Nombre Funcion y llego " + lex);
-    }
-    if (check_bool_main) {
-        compileError("Error de Semantica", "La Funcion Principal ya esta definida");
-    }
-    if (lex == "principal") {
-        check_bool_main = true;
-    }
-    tie(tok, lex) = scanner();
-    if (lex != "(") {
-        compileError("Error de Sintaxis", "Se esperaba parentesis abierto \"(\"");
-    }
-    tie(tok, lex) = scanner();
-    if (lex != ")") {
-        params();
-    }
-    if (lex != ")") {
-        compileError("Error de Sintaxis", "Se esperaba parentesis cerrado \")\"");
-    }
-    tie(tok, lex) = scanner();
-    blockFunction();
-}
-
-void program(){
-    while (!entry.empty() && idx < entry.size()) {
+void prgm() {
+    while (entrada.length() > 0 && idx < entrada.length()) {
         constVars();
-        functions();
+        funcs();
     }
 }
 
-void parser(){
-    program();
+void parser() {
+    global entrada, idx, tok, lex;
+    prgm();
 }
-
-erra
-colCal
-scanner
-cte
-termino
-signo
-expo
-multi
-suma
-oprel
-opno
-opy
-expr
-constVars
-params
-gpoExp
-leer
-imprime
-imprimenl
-desde
-mientras
-si
-repite
-lmp
-regresa
-comando
-blkcmd
-estatutos
-blkFunc
-funcs
-prgm
-parser
