@@ -15,38 +15,38 @@ const int ERR = -1;
 const int ACP = 99;
 int idx = 0;
 bool cERR = false;
-string tok = "";
-string lex = "";
-bool bPrinc = false;
-int ren = 1;
-int colu = 0;
+string token = "";
+string lexema = "";
+bool boolPrinc = false;
+int renglon = 1;
+int columna = 0;
 string tipo[5] = {"nulo", "entero", "decimal", "palabra", "logico"};
 string opl[3] = {"no", "y", "o"};
 string ctl[2] = {"verdadero", "falso"};
 string key[20] = {"constante", "desde", "si", "hasta", "mientras", "entero", "decimal", "regresa", "hacer",
-      "palabra", "logico", "nulo", "sino", "incr" "imprime", "imprimenl", "lee", "repite", "que"};
-char opar[6] = {'+', '-', '*', '/', '%', '^'};
-char deli[9] = {';', ',', '(',')', '{', '}', '[', ']', ':'};
-char delu[3] = {' ', '\t', '\n'};
-string opRl[5] = {"<", ">", "<=", ">=", "<>"};
+                  "palabra", "logico", "nulo", "sino", "incr" "imprime", "imprimenl", "lee", "repite", "que"};
+char opAritmetico[6] = {'+', '-', '*', '/', '%', '^'};
+char delimitador[9] = {';', ',', '(',')', '{', '}', '[', ']', ':'};
+char delUniversal[3] = {' ', '\t', '\n'};
+string opRelacional[5] = {"<", ">", "<=", ">=", "<>"};
 string tkCts[4] = {"Ent", "Dec", "CtA", "CtL"};
 string entrada = "";
-int matran[14][9] = {
-    //let  dig  del  opa   <    >    =    .   "
-    {1,   2,   6,   5,    10,  8,   7,  ERR, 12}, //0
-    {1,   1,   ACP, ACP, ACP, ACP, ACP, ACP,ACP}, //1
-    {ACP, 2,   ACP, ACP, ACP, ACP, ACP,  3, ACP}, //2
-    {ERR, 4,   ERR, ERR, ERR, ERR, ERR, ERR,ERR}, //3
-    {ACP, 4,   ACP, ACP, ACP, ACP, ACP, ACP,ACP}, //4
-    {ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,ACP}, //5
-    {ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP,ACP}, //6
-    {ACP, ACP, ACP, ACP, ACP, ACP,  9 ,ACP ,ACP}, //7
-    {ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,9 ,ACP ,ACP}, //8
-    {ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP}, //9
-    {ACP ,ACP ,ACP ,ACP ,ACP ,11 ,9 ,ACP ,ACP}, //10
-    {ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP}, //11
-    {12 ,12 ,12 ,12 ,12 ,12 ,12 ,12 ,13}, //12
-    {ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP ,ACP} //13
+int matrizTransicion[14][9] = {
+    // let  dig del   opa   <    >    =     .    "
+    {   1,   2,   6,   5,   10,  8,   7,   ERR, 12 },  //0
+    {   1,   1,   ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 1
+    {   ACP, 2,   ACP, ACP, ACP, ACP, ACP, 3,   ACP},  // 2
+    {   ERR, 4,   ERR, ERR, ERR, ERR, ERR, ERR, ERR},  // 3
+    {   ACP, 4,   ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 4
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 5
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 6
+    {   ACP, ACP, ACP, ACP, ACP, ACP, 9,   ACP, ACP},  // 7
+    {   ACP, ACP, ACP, ACP, ACP, ACP, 9,   ACP, ACP},  // 8
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 9
+    {   ACP, ACP, ACP, ACP, ACP, 11,  9 ,  ACP, ACP},  // 10
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP},  // 11
+    {   12,  12,  12,  12,  12,  12,  12,  12,  13 },  // 12
+    {   ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP, ACP}   // 13
 };
 
 // Prototipado de funciones
@@ -113,35 +113,49 @@ int main() {
 
 void erra(string terr, string desc) {
     cERR;
-    cout << '[' << ren << ']' << '[' << colu << ']' << terr << desc << endl;
+    cout << '[' << renglon << ']' << '[' << columna << ']' << terr << ": " << desc << endl;
     cERR = true;
 }
 
 int colCar(char x) {
-    if (x == '_' || isalpha(x)) return 0;
-    if (isdigit(x)) return 1;
-    if (find(deli, deli+9, x) != deli+9) return 2;
-    if (find(opar, opar+6, x) != opar+6) return 3;
-    if (x == '<') return 4;
-    if (x == '>') return 5;
-    if (x == '=') return 6;
-    if (x == '.') return 7;
-    if (x == '"') return 8;
-    if (find(delu, delu+3, x) != delu+3) return 15;
-    erra("Error Lexico", x + " simbolo no valido en Alfabeto");
+    if (x == '_' || isalpha(x))
+        return 0;
+    if (isdigit(x))
+        return 1;
+    if (find(delimitador, delimitador+9, x) != delimitador+9)
+        return 2;
+    if (find(opAritmetico, opAritmetico+6, x) != opAritmetico+6)
+        return 3;
+    if (x == '<')
+        return 4;
+    if (x == '>')
+        return 5;
+    if (x == '=')
+        return 6;
+    if (x == '.')
+        return 7;
+    if (x == '"')
+        return 8;
+    if (find(delUniversal, delUniversal+3, x) != delUniversal+3)
+        return 15;
+
+    erra("Error lexemaico", x + " simbolo no valido en Alfabeto");
     return ERR;
 }
 
 pair<string, string> scanner() {
+    // entrada, ERR, ACP, idx, ren, colu
     int estado = 0;
     string lexema = "";
     int col = 0;
     while (idx < entrada.length() && estado != ERR && estado != ACP) {
         char c = entrada[idx];
-        idx = idx + 1;
+        idx += 1;
+
+        // Para brincar de renglon
         if (c == '\n') {
-            colu = 0;
-            ren = ren + 1;
+            columna = 0;
+            renglon += 1;
         }
 
         col = colCar(c);
@@ -153,41 +167,55 @@ pair<string, string> scanner() {
                 estado = ACP;
             }
             if (col >=0 && col <= 8) {
-                estado = matran[estado][col];
+                estado = matrizTransicion[estado][col];
             }
             if (estado != ERR && estado != ACP && col != 15 || col == 15 && estado == 12) {
                 int estA = estado;
-                lexema = lexema + c;
+                lexema += c;
             }
 
-            if (c != '\n') colu = colu + 1;
+            if (c != '\n')
+                columna += 1;
         }
     }
-    if (estado != ACP && estado != ERR) int estA = estado;
+
+    if (estado != ACP && estado != ERR)
+        int estA = estado;
     string token = "Ntk";
+
     if (estado == ACP && col != 15) {
-        idx = idx - 1;
-        colu = colu - 1;
+        idx -= 1;
+        columna -= 1;
     }
 
     if (estado != ERR && estado != ACP) {
         int estA = estado;
     }
 
-    if (find(key, key+20, lexema) != key+20) token = "Res";
-    else if (find(opl, opl+3, lexema) != opl+3) token = "OpL";
-    else if (find(ctl, ctl+2, lexema) != ctl+2) token = "CtL";
+    if (find(key, key+20, lexema) != key+20)
+        token = "Res";
+    else if (find(opl, opl+3, lexema) != opl+3)
+        token = "OpL";
+    else if (find(ctl, ctl+2, lexema) != ctl+2)
+        token = "CtL";
     else token = "Ide";
 
     int estA = estado;
 
-    if (estA == 2) token = "Ent";
-    else if (estA == 4) token = "Dec";
-    else if (estA == 5) token = "OpA";
-    else if (estA == 6) token = "Del";
-    else if (estA == 7) token = "OpS";
-    else if (estA >= 8 && estA <= 11) token = "OpR";
-    else if (estA == 13) token = "CtA";
+    if (estA == 2)
+        token = "Ent";
+    else if (estA == 4)
+        token = "Dec";
+    else if (estA == 5)
+        token = "OpA";
+    else if (estA == 6)
+        token = "Del";
+    else if (estA == 7)
+        token = "OpS";
+    else if (estA >= 8 && estA <= 11)
+        token = "OpR";
+    else if (estA == 13)
+        token = "CtA";
 
     if (token == "Ntk") {
         cout << "estA=" << estA << "estado=" << estado << endl;
@@ -197,43 +225,43 @@ pair<string, string> scanner() {
 }
 
 void cte() {
-    if (find(tkCts, tkCts+4, tok) == tkCts+4) {
-        erra("Error de sintaxis", "se esperaba Cte y llego " + lex);
+    if (find(tkCts, tkCts+4, token) == tkCts+4) {
+        erra("Error de sintaxis", "se esperaba Cte y llego " + lexema);
     }
 }
 
 void termino() {
-    if (lex != "(" && tok != "Ide" && tok != "CtA" && tok != "CtL" && tok != "Ent" && tok != "Dec") {
-        tie(tok, lex) = scanner();
+    if (lexema != "(" && token != "Ide" && token != "CtA" && token != "CtL" && token != "Ent" && token != "Dec") {
+        tie(token, lexema) = scanner();
     }
-    if (lex == "(") {
-        tie(tok, lex) = scanner();
+    if (lexema == "(") {
+        tie(token, lexema) = scanner();
         expr();
-        if (lex != ")") {
-            erra("Error de Sintaxis", "se espera cerrar ) y llego " + lex);
+        if (lexema != ")") {
+            erra("Error de Sintaxis", "se espera cerrar ) y llego " + lexema);
         }
     }
-    else if (tok == "Ide") {
-        tie(tok, lex) = scanner();
-        if (lex == "[") {
-            tie(tok, lex) = scanner();
+    else if (token == "Ide") {
+        tie(token, lexema) = scanner();
+        if (lexema == "[") {
+            tie(token, lexema) = scanner();
             expr();
-            if (lex != "]") {
-                erra("Error Sintaxis", "se esperaba cerrar ] y llego " + lex);
+            if (lexema != "]") {
+                erra("Error Sintaxis", "se esperaba cerrar ] y llego " + lexema);
             }
         }
     }
-    else if (tok == "CtL" || tok == "CtA" || tok == "Dec" || tok == "Ent") {
+    else if (token == "CtL" || token == "CtA" || token == "Dec" || token == "Ent") {
         cte();
     }
-    if (lex != ")") {
-        tie(tok, lex) = scanner();
+    if (lexema != ")") {
+        tie(token, lexema) = scanner();
     }
 }
 
 void signo() {
-    if (lex == "-") {
-        tie(tok, lex) = scanner();
+    if (lexema == "-") {
+        tie(token, lexema) = scanner();
     }
     termino();
 }
@@ -242,7 +270,7 @@ void expo() {
     string opr = "^";
     while (opr == "^") {
         signo();
-        opr = lex;
+        opr = lexema;
     }
 }
 
@@ -250,7 +278,7 @@ void multi() {
     string opr = "*";
     while (opr == "*" || opr == "/" || opr == "%") {
         expo();
-        opr = lex;
+        opr = lexema;
     }
 }
 
@@ -258,21 +286,21 @@ void suma() {
     string opr = "+";
     while (opr == "+" || opr == "-") {
         multi();
-        opr = lex;
+        opr = lexema;
     }
 }
 
 void oprel() {
     string opr = "<";
-    while (find(opRl, opRl+5, opr) != opRl+5) {
+    while (find(opRelacional, opRelacional+5, opr) != opRelacional+5) {
         suma();
-        opr = lex;
+        opr = lexema;
     }
 }
 
 void opno() {
-    if (lex == "no") {
-        tie(tok, lex) = scanner();
+    if (lexema == "no") {
+        tie(token, lexema) = scanner();
     }
     oprel();
 }
@@ -281,7 +309,7 @@ void opy() {
     string opr = "y";
     while (opr == "y") {
         opno();
-        opr = lex;
+        opr = lexema;
     }
 }
 
@@ -289,70 +317,72 @@ void expr() {
     string opr = "o";
     while (opr == "o") {
         opy();
-        opr = lex;
+        opr = lexema;
     }
 }
 
 void constVars() {
-    tie(tok, lex) = scanner();
+    tie(token, lexema) = scanner();
 }
 
 void params() {
-    tie(tok, lex) = scanner();
+    tie(token, lexema) = scanner();
 }
 
 void gpoExp() {
-    if (lex != ")") {
-        string deli = ",";
-        while (deli == ",") {
-            if (lex == ",") {
-                tie(tok, lex) = scanner();
+    if (lexema != ")") {
+        string delimitador = ",";
+        while (delimitador == ",") {
+            if (lexema == ",") {
+                tie(token, lexema) = scanner();
             }
             expr();
-            deli = lex;
+            delimitador = lexema;
         }
     }
 }
 
 void leer() {
-    tie(tok, lex) = scanner();
-    if (lex != "(") {
-        erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
+    tie(token, lexema) = scanner();
+    if (lexema != "(") {
+        erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lexema);
     }
-    tie(tok, lex) = scanner();
-    if (tok != "Ide") {
-        erra("Error de Sintaxis", "se esperaba un identificador y llego " + lex);
+    tie(token, lexema) = scanner();
+    if (token != "Ide") {
+        erra("Error de Sintaxis", "se esperaba un identificador y llego " + lexema);
     }
-    string var = lex; // store the variable name
-    tie(tok, lex) = scanner();
-    if (lex != ")") {
-        erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lex);
+    string var = lexema; // store the variable name
+    tie(token, lexema) = scanner();
+    if (lexema != ")") {
+        erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lexema);
     }
 }
 
 void imprime() {
-    tie(tok, lex) = scanner();
-    if (lex != "(") {
-        erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
+    tie(token, lexema) = scanner();
+    if (lexema != "(") {
+        erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lexema);
     }
-    tie(tok, lex) = scanner();
-    if (lex != ")") gpoExp();
-    if (lex != ")") tie(tok, lex) = scanner();
-    if (lex != ")") {
-        erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lex);
-    }
+    tie(token, lexema) = scanner();
+    if (lexema != ")")
+        gpoExp();
+    if (lexema != ")")
+        tie(token, lexema) = scanner();
+    if (lexema != ")")
+        erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lexema);
 }
 
 void imprimenl() {
-    tie(tok, lex) = scanner();
-    if (lex != "(") {
-        erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
+    tie(token, lexema) = scanner();
+    if (lexema != "(") {
+        erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lexema);
     }
-    tie(tok, lex) = scanner();
-    if (lex != ")") gpoExp();
-    if (lex != ")") tie(tok, lex) = scanner();
-    if (lex != ")") {
-        erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lex);
+
+    tie(token, lexema) = scanner();
+    if (lexema != ")") gpoExp();
+    if (lexema != ")") tie(token, lexema) = scanner();
+    if (lexema != ")") {
+        erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lexema);
     }
 }
 
@@ -381,64 +411,64 @@ void regresa() {
 }
 
 void comando() {
-    //if (tok == "Ide") asigLfunc();
-    if (lex == "lee") leer();
-    else if (lex == "imprime") imprime();
-    else if (lex == "imprimenl") imprimenl();
-    else if (lex == "desde") desde();
-    else if (lex == "mientras") mientras();
-    else if (lex == "si") si();
-    else if (lex == "repite") repite();
-    else if (lex == "lmp") lmp();
-    else if (lex == "regresa") regresa();
-    else erra("Error de Sintaxis", "comando no definido " + lex);
-    tie(tok, lex) = scanner();
+    //if (token == "Ide") asigLfunc();
+    if (lexema == "lee") leer();
+    else if (lexema == "imprime") imprime();
+    else if (lexema == "imprimenl") imprimenl();
+    else if (lexema == "desde") desde();
+    else if (lexema == "mientras") mientras();
+    else if (lexema == "si") si();
+    else if (lexema == "repite") repite();
+    else if (lexema == "lmp") lmp();
+    else if (lexema == "regresa") regresa();
+    else erra("Error de Sintaxis", "comando no definido " + lexema);
+    tie(token, lexema) = scanner();
 }
 
 void blkcmd() {
-    tie(tok, lex) = scanner();
-    if (lex != ";" && lex != "{") {
+    tie(token, lexema) = scanner();
+    if (lexema != ";" && lexema != "{") {
         comando();
-        tie(tok, lex) = scanner();
-        if (lex != ";") erra("Error de Sintaxis", "se esperaba ; y llego " + lex);
+        tie(token, lexema) = scanner();
+        if (lexema != ";") erra("Error de Sintaxis", "se esperaba ; y llego " + lexema);
     }
-    else if (lex == "{") {
+    else if (lexema == "{") {
         estatutos();
-        if (lex != "}") erra("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lex);
+        if (lexema != "}") erra("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lexema);
     }
 }
 
 void estatutos() {
     string cbk = "{";
     while (cbk != "}") {
-        if (lex != ";") comando();
-        if (lex != ";") erra("Error de Sintaxis", "se esperaba ; y llego " + lex);
-        tie(tok, lex) = scanner();
-        cbk = lex;
+        if (lexema != ";") comando();
+        if (lexema != ";") erra("Error de Sintaxis", "se esperaba ; y llego " + lexema);
+        tie(token, lexema) = scanner();
+        cbk = lexema;
     }
 }
 
 void blkFunc() {
-    if (lex != "{") erra("Error de Sintaxis", "se esperaba abrir \"{\" y llego " + lex);
-    tie(tok, lex) = scanner();
-    if (lex != "}") estatutos();
-    if (lex != "}") erra("Error de Sintaxis", "se esperaba cerrar \"}\" y llego " + lex);
+    if (lexema != "{") erra("Error de Sintaxis", "se esperaba abrir \"{\" y llego " + lexema);
+    tie(token, lexema) = scanner();
+    if (lexema != "}") estatutos();
+    if (lexema != "}") erra("Error de Sintaxis", "se esperaba cerrar \"}\" y llego " + lexema);
 }
 
 void funcs() {
-    if (find(tipo, tipo+5, lex) == tipo+5) {
+    if (find(tipo, tipo+5, lexema) == tipo+5) {
         erra("Error Sintactico", "Se esperaba tipo");
     }
-    tie(tok, lex) = scanner();
-    if (tok != "Ide") erra("Error Sintaxis", "Se esperaba Nombre Funcion y llego " + lex);
-    if (bPrinc) erra("Error de Semantica", "la Funcion Principal ya esta definida");
-    if (lex == "principal") bPrinc = true;
-    tie(tok, lex) = scanner();
-    if (lex != "(") erra("Error de Sintaxis", "se esperaba parentisis abierto \"(\" y llego " + lex);
-    tie(tok, lex) = scanner();
-    if (lex != ")") params();
-    if (lex != ")") erra("Error de Sintaxis", "se esperaba parentisis cerrado \")\"");
-    tie(tok, lex) = scanner();
+    tie(token, lexema) = scanner();
+    if (token != "Ide") erra("Error Sintaxis", "Se esperaba Nombre Funcion y llego " + lexema);
+    if (boolPrinc) erra("Error de Semantica", "la Funcion Principal ya esta definida");
+    if (lexema == "principal") boolPrinc = true;
+    tie(token, lexema) = scanner();
+    if (lexema != "(") erra("Error de Sintaxis", "se esperaba parenglontisis abierto \"(\" y llego " + lexema);
+    tie(token, lexema) = scanner();
+    if (lexema != ")") params();
+    if (lexema != ")") erra("Error de Sintaxis", "se esperaba parenglontisis cerrado \")\"");
+    tie(token, lexema) = scanner();
     blkFunc();
 }
 
