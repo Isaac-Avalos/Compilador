@@ -39,6 +39,8 @@ key= ['constante', 'desde', 'si', 'hasta', 'mientras', 'entero', 'decimal', 'reg
 opar=['+', '-', '*', '/', '%', '^']
 deli=[';', ',', '(',')', '{', '}', '[', ']', ':']
 delu=[' ', '\t', '\n']
+opRl = ['<', '>', '<=', '>=', '<>']
+tkCts = ['Ent', 'Dec', 'CtA', 'CtL']
 entrada = ''
 def colCar(x):
     if x == '_' or x.isalpha(): return 0 
@@ -111,19 +113,91 @@ def scanner():
 
     return token, lexema
 
-def opno(): pass
+def cte():
+    global tok, lex 
+    if not(tok in tkCts):
+        erra('Error de sintaxis', 'se esperaba Cte y llego '+ lex) 
+
+
+def termino():
+    global lex, tok
+    if lex != '(' and tok != 'Ide' and tok != 'CtA' and \
+        tok != 'CtL' and tok != 'Ent' and 'Dec':
+        tok, lex = scanner()
+    if lex == '(':
+        tok, lex = scanner()
+        expr()
+        if lex != ')':
+            erra('Error de Sintaxis', 'se espera cerrar ) y llego '+ lex)
+    elif tok == 'Ide':
+        tok, lex = scanner()
+        if lex == '[': 
+            tok, lex = scanner()
+            expr()
+            if lex != ']':
+                erra('Error Sintaxis', 'se esperaba cerrar ] y llego '+lex)
+    
+    elif tok == 'CtL' or tok == 'CtA' or tok == 'Dec' or tok == 'Ent': 
+        cte()
+    if lex != ')':  
+        tok, lex = scanner()
+
+def signo():
+    global lex, tok
+    if lex == '-':
+        tok, lex = scanner()
+    termino()
+
+
+def expo():
+    global tok, lex
+    opr = '^'
+    while opr == '^':
+        signo()
+        opr = lex
+
+
+def multi():
+    global tok, lex
+    opr = '*'
+    while opr == '*' or opr == '/' or opr == '%':
+        expo()
+        opr = lex
+
+def suma():
+    global tok, lex
+    opr = '+'
+    while opr == '+' or opr == '-':
+        multi()
+        opr = lex
+
+def oprel():
+    global tok, lex
+    opr = '<'
+    while opr in opRl:
+        suma()
+        opr = lex
+
+def opno(): 
+    global lex, tok
+    if lex == 'no':
+        tok, lex = scanner()
+    oprel()
 
 def opy():
+    global tok, lex
     opr = 'y'
     while opr == 'y':
         opno()
         opr = lex
 
 def expr():
+    global tok, lex
     opr = 'o'
     while opr == 'o':
         opy()
         opr = lex
+
 
 def constVars():
         global entrada, idx, tok, lex
@@ -133,11 +207,46 @@ def params():
     global entrada, lex, tok
     tok, lex = scanner()
 
+
+def gpoExp():
+    global tok, lex
+    if lex != ')':
+        deli=','
+        while deli == ',':
+            if lex == ',': 
+                tok, lex = scanner()
+            expr()
+            deli = lex
+            #if deli == ',': 
+                #genCod(linea, 'OPR 0, 20)
+
+
 def leer(): pass
 
-def imprime(): pass
+def imprime(): 
+    global tok, lex 
+    tok, lex = scanner()
+    if lex != '(':
+        erra('Error de Sintaxis', 'se esperaba abrir ( y llego '+ lex)
+    tok, lex = scanner()
+    if lex != ')': gpoExp()
+    if lex != ')': tok, lex = scanner()
+    if lex != ')':
+        erra('Error de Sintaxis', 'se esperaba cerrar ) y llego '+ lex)
+    #genCod(linea, 'OPR 0, 20')
 
-def imprimenl(): pass
+def imprimenl(): 
+    global tok, lex 
+    tok, lex = scanner()
+    if lex != '(':
+        erra('Error de Sintaxis', 'se esperaba abrir ( y llego '+ lex)
+    tok, lex = scanner()
+    if lex != ')': gpoExp()
+    if lex != ')': tok, lex = scanner()
+    if lex != ')':
+        erra('Error de Sintaxis', 'se esperaba cerrar ) y llego '+ lex)
+    #genCod(linea, 'OPR 0, 21')
+
 
 def desde(): pass
 
@@ -153,6 +262,7 @@ def regresa(): pass
 
 def comando(): 
     global tok, lex
+    if tok == 'Ide': asigLfunc()
     if lex == 'lee': leer()
     elif lex == 'imprime': imprime()
     elif lex == 'imprimenl': imprimenl()
@@ -163,6 +273,7 @@ def comando():
     elif lex == 'lmp': lmp()
     elif lex == 'regresa': regresa()
     else: erra('Error de Sintaxis', 'comando no definido '+ lex)
+    tok, lex = scanner()
 
 def blkcmd():
     global lex, tok
@@ -177,12 +288,12 @@ def blkcmd():
 
 def estatutos(): 
     global tok, lex
-    tok, lex = scanner();
-    while lex != ';':
+    cbk = '{'
+    while cbk != '}':
         if lex != ';': comando()
-        tok, lex = scanner();
         if lex != ';': erra('Error de Sintaxis', 'se esperaba ; y llego '+lex)
         tok, lex = scanner()
+        cbk = lex
 
 def blkFunc():
     global lex, tok
@@ -195,7 +306,6 @@ def blkFunc():
 
 def funcs():
         global entrada, idx, tok, lex, tipo, bPrinc
-        print('Entro a Funcs')
         if not(lex in tipo):
             erra('Error Sintactico', 'Se esperaba tipo' + str(tipo))
         tok, lex = scanner()
@@ -213,7 +323,7 @@ def funcs():
 def prgm():
     while len(entrada) > 0 and  idx < len(entrada):
         constVars()
-        funcs();
+        funcs()
 
 def parser():
     global entrada, idx, tok, lex
