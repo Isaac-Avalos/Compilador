@@ -1,8 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <algorithm>
+#include <vector>
 #include <utility>
+#include <cstring>
+#include <algorithm>
+#include <cstdio>
+#include <tuple>
 
 using namespace std;
 
@@ -11,7 +15,7 @@ const int ERR = -1;
 const int ACP = 99;
 int idx = 0;
 bool cERR = false;
-char tok = '\0';
+string tok = "";
 string lex = "";
 bool bPrinc = false;
 int ren = 1;
@@ -24,7 +28,7 @@ string key[20] = {"constante", "desde", "si", "hasta", "mientras", "entero", "de
 char opar[6] = {'+', '-', '*', '/', '%', '^'};
 char deli[9] = {';', ',', '(',')', '{', '}', '[', ']', ':'};
 char delu[3] = {' ', '\t', '\n'};
-char opRl[5] = {'<', '>', '<=', '>=', '<>'};
+string opRl[5] = {"<", ">", "<=", ">=", "<>"};
 string tkCts[4] = {"Ent", "Dec", "CtA", "CtL"};
 string entrada = "";
 int matran[14][9] = {
@@ -46,6 +50,10 @@ int matran[14][9] = {
 };
 
 // Definicion de funciones
+
+void expr();
+void estatutos();
+
 void erra(string terr, string desc) {
     cERR;
     cout << '[' << ren << ']' << '[' << colu << ']' << terr << desc << endl;
@@ -70,10 +78,9 @@ int colCar(char x) {
 pair<string, string> scanner() {
     int estado = 0;
     string lexema = "";
-    char c = "";
     int col = 0;
     while (idx < entrada.length() && estado != ERR && estado != ACP) {
-        c = entrada[idx];
+        char c = entrada[idx];
         idx = idx + 1;
         if (c == '\n') {
             colu = 0;
@@ -92,14 +99,14 @@ pair<string, string> scanner() {
                 estado = matran[estado][col];
             }
             if (estado != ERR && estado != ACP && col != 15 || col == 15 && estado == 12) {
-                estA = estado;
+                int estA = estado;
                 lexema = lexema + c;
             }
 
             if (c != '\n') colu = colu + 1;
         }
     }
-    if (estado != ACP && estado != ERR) estA = estado;
+    if (estado != ACP && estado != ERR) int estA = estado;
     string token = "Ntk";
     if (estado == ACP && col != 15) {
         idx = idx - 1;
@@ -107,7 +114,7 @@ pair<string, string> scanner() {
     }
 
     if (estado != ERR && estado != ACP) {
-        estA = estado;
+        int estA = estado;
     }
 
     if (find(key, key+20, lexema) != key+20) token = "Res";
@@ -115,12 +122,14 @@ pair<string, string> scanner() {
     else if (find(ctl, ctl+2, lexema) != ctl+2) token = "CtL";
     else token = "Ide";
 
+    int estA = estado;
+
     if (estA == 2) token = "Ent";
     else if (estA == 4) token = "Dec";
     else if (estA == 5) token = "OpA";
     else if (estA == 6) token = "Del";
     else if (estA == 7) token = "OpS";
-    else if (estA in {8, 9 , 10 , 11}) token = "OpR";
+    else if (estA >= 8 && estA <= 11) token = "OpR";
     else if (estA == 13) token = "CtA";
 
     if (token == "Ntk") {
@@ -137,22 +146,22 @@ void cte() {
 }
 
 void termino() {
-    if (lex != '(' && tok != "Ide" && tok != "CtA" && tok != "CtL" && tok != "Ent" && tok != "Dec") {
+    if (lex != "(" && tok != "Ide" && tok != "CtA" && tok != "CtL" && tok != "Ent" && tok != "Dec") {
         tie(tok, lex) = scanner();
     }
-    if (lex == '(') {
+    if (lex == "(") {
         tie(tok, lex) = scanner();
         expr();
-        if (lex != ')') {
+        if (lex != ")") {
             erra("Error de Sintaxis", "se espera cerrar ) y llego " + lex);
         }
     }
     else if (tok == "Ide") {
         tie(tok, lex) = scanner();
-        if (lex == '[') {
+        if (lex == "[") {
             tie(tok, lex) = scanner();
             expr();
-            if (lex != ']') {
+            if (lex != "]") {
                 erra("Error Sintaxis", "se esperaba cerrar ] y llego " + lex);
             }
         }
@@ -160,44 +169,44 @@ void termino() {
     else if (tok == "CtL" || tok == "CtA" || tok == "Dec" || tok == "Ent") {
         cte();
     }
-    if (lex != ')') {
+    if (lex != ")") {
         tie(tok, lex) = scanner();
     }
 }
 
 void signo() {
-    if (lex == '-') {
+    if (lex == "-") {
         tie(tok, lex) = scanner();
     }
     termino();
 }
 
 void expo() {
-    char opr = '^';
-    while (opr == '^') {
+    string opr = "^";
+    while (opr == "^") {
         signo();
         opr = lex;
     }
 }
 
 void multi() {
-    char opr = '*';
-    while (opr == '*' || opr == '/' || opr == '%') {
+    string opr = "*";
+    while (opr == "*" || opr == "/" || opr == "%") {
         expo();
         opr = lex;
     }
 }
 
 void suma() {
-    char opr = '+';
-    while (opr == '+' || opr == '-') {
+    string opr = "+";
+    while (opr == "+" || opr == "-") {
         multi();
         opr = lex;
     }
 }
 
 void oprel() {
-    char opr = '<';
+    string opr = "<";
     while (find(opRl, opRl+5, opr) != opRl+5) {
         suma();
         opr = lex;
@@ -236,10 +245,10 @@ void params() {
 }
 
 void gpoExp() {
-    if (lex != ')') {
-        char deli = ',';
-        while (deli == ',') {
-            if (lex == ',') {
+    if (lex != ")") {
+        string deli = ",";
+        while (deli == ",") {
+            if (lex == ",") {
                 tie(tok, lex) = scanner();
             }
             expr();
@@ -250,7 +259,7 @@ void gpoExp() {
 
 void leer() {
     tie(tok, lex) = scanner();
-    if (lex != '(') {
+    if (lex != "(") {
         erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
     }
     tie(tok, lex) = scanner();
@@ -259,33 +268,33 @@ void leer() {
     }
     string var = lex; // store the variable name
     tie(tok, lex) = scanner();
-    if (lex != ')') {
+    if (lex != ")") {
         erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lex);
     }
 }
 
 void imprime() {
     tie(tok, lex) = scanner();
-    if (lex != '(') {
+    if (lex != "(") {
         erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
     }
     tie(tok, lex) = scanner();
-    if (lex != ')') gpoExp();
-    if (lex != ')') tie(tok, lex) = scanner();
-    if (lex != ')') {
+    if (lex != ")") gpoExp();
+    if (lex != ")") tie(tok, lex) = scanner();
+    if (lex != ")") {
         erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lex);
     }
 }
 
 void imprimenl() {
     tie(tok, lex) = scanner();
-    if (lex != '(') {
+    if (lex != "(") {
         erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
     }
     tie(tok, lex) = scanner();
-    if (lex != ')') gpoExp();
-    if (lex != ')') tie(tok, lex) = scanner();
-    if (lex != ')') {
+    if (lex != ")") gpoExp();
+    if (lex != ")") tie(tok, lex) = scanner();
+    if (lex != ")") {
         erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lex);
     }
 }
@@ -315,7 +324,7 @@ void regresa() {
 }
 
 void comando() {
-    if (tok == "Ide") asigLfunc();
+    //if (tok == "Ide") asigLfunc();
     if (lex == "lee") leer();
     else if (lex == "imprime") imprime();
     else if (lex == "imprimenl") imprimenl();
@@ -331,47 +340,47 @@ void comando() {
 
 void blkcmd() {
     tie(tok, lex) = scanner();
-    if (lex != ';' && lex != '{') {
+    if (lex != ";" && lex != "{") {
         comando();
         tie(tok, lex) = scanner();
-        if (lex != ';') erra("Error de Sintaxis", "se esperaba ; y llego " + lex);
+        if (lex != ";") erra("Error de Sintaxis", "se esperaba ; y llego " + lex);
     }
-    else if (lex == '{') {
+    else if (lex == "{") {
         estatutos();
-        if (lex != '}') erra("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lex);
+        if (lex != "}") erra("Error de Sintaxis", "se esperaba cerrar block \"}\" y llego " + lex);
     }
 }
 
 void estatutos() {
-    char cbk = '{';
-    while (cbk != '}') {
-        if (lex != ';') comando();
-        if (lex != ';') erra("Error de Sintaxis", "se esperaba ; y llego " + lex);
+    string cbk = "{";
+    while (cbk != "}") {
+        if (lex != ";") comando();
+        if (lex != ";") erra("Error de Sintaxis", "se esperaba ; y llego " + lex);
         tie(tok, lex) = scanner();
         cbk = lex;
     }
 }
 
 void blkFunc() {
-    if (lex != '{') erra("Error de Sintaxis", "se esperaba abrir \"{\" y llego " + lex);
+    if (lex != "{") erra("Error de Sintaxis", "se esperaba abrir \"{\" y llego " + lex);
     tie(tok, lex) = scanner();
-    if (lex != '}') estatutos();
-    if (lex != '}') erra("Error de Sintaxis", "se esperaba cerrar \"}\" y llego " + lex);
+    if (lex != "}") estatutos();
+    if (lex != "}") erra("Error de Sintaxis", "se esperaba cerrar \"}\" y llego " + lex);
 }
 
 void funcs() {
     if (find(tipo, tipo+5, lex) == tipo+5) {
-        erra("Error Sintactico", "Se esperaba tipo" + str(tipo));
+        erra("Error Sintactico", "Se esperaba tipo");
     }
     tie(tok, lex) = scanner();
     if (tok != "Ide") erra("Error Sintaxis", "Se esperaba Nombre Funcion y llego " + lex);
     if (bPrinc) erra("Error de Semantica", "la Funcion Principal ya esta definida");
     if (lex == "principal") bPrinc = true;
     tie(tok, lex) = scanner();
-    if (lex != '(') erra("Error de Sintaxis", "se esperaba parentisis abierto \"(\" y llego " + lex);
+    if (lex != "(") erra("Error de Sintaxis", "se esperaba parentisis abierto \"(\" y llego " + lex);
     tie(tok, lex) = scanner();
-    if (lex != ')') params();
-    if (lex != ')') erra("Error de Sintaxis", "se esperaba parentisis cerrado \")\"");
+    if (lex != ")") params();
+    if (lex != ")") erra("Error de Sintaxis", "se esperaba parentisis cerrado \")\"");
     tie(tok, lex) = scanner();
     blkFunc();
 }
