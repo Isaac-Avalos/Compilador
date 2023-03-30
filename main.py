@@ -262,9 +262,8 @@ def regresa(): pass
 
 def comando(): 
     global tok, lex
-    if tok == 'Ide': asigLfunc()
-    if lex == 'lee': leer()
-    elif lex == 'imprime': imprime()
+    #if lex == 'lee': leer()
+    if lex == 'imprime': imprime()
     elif lex == 'imprimenl': imprimenl()
     elif lex == 'desde': desde()
     elif lex == 'mientras': mientras()
