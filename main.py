@@ -7,6 +7,98 @@ lex = ''
 bPrinc = False
 ren = 1
 colu = 0
+pTipos = []
+
+cTipo = ["E=E", "A=A", "R=R", "L=L", "R=E",
+        "E+E", "E+R", "R+E", "R+R", "A+A",
+        "E-E", "E-R", "R-E", "R-R",
+        "E*E", "E*R", "R*E", "R*R",
+        "E/E", "E/R", "R/E", "R/R",
+        "E\37E", "-E", "-R",
+        "LyL", "LoL", "noL",
+        "E>E", "R>E", "E>R", "R>R",
+        "E<E", "R<E", "E<R", "R<R",
+        "E>=E", "R>=E", "E>=R", "R>=R",
+        "E<=E", "R<=E", "E<=R", "R<=R",
+        "E<>E", "R<>E", "E<>R", "R<>R", "A<>A",
+        "E==E", "R==E", "E==R", "R==R", "A==A"
+]
+
+tipoR = ["",  "",  "",  "",  "",
+        "E", "R", "R", "R", "A",
+        "E", "R", "R", "R",
+        "E", "R", "R", "R",
+        "R", "R", "R", "R",
+                                          "E", "E", "R",
+                                          "L", "L", "L",
+                                          "L", "L", "L", "L",
+                                          "L", "L", "L", "L",
+                                          "L", "L", "L", "L",
+                                          "L", "L", "L", "L",
+                                          "L", "L", "L", "L", "L",
+                                          "L", "L", "L", "L", "L"
+]
+
+def buscaTipo(cadt):
+    for i in range(55):
+        if cTipo[i]==cadt: return i
+    return -1
+
+
+class objPrgm():
+    def __init__(self, nom, cls, tip, dim1, dim2, apv) -> None:
+        self.nombre = nom
+        self.clase = cls
+        self.tipo = tip
+        self.dim1 = dim1
+        self.dim2 = dim2
+        self.apv = apv
+
+class TabSimb():
+    arreglo = []
+    def inserSimbolo(self, nom, cls, tip, dim1, dim2, apv):
+        obj = objPrgm(nom, cls, tip, dim1, dim2, apv)
+        self.arreglo.append( obj )
+
+    def buscaSimbolo(self, ide):
+        for x in self.arreglo:
+            if x.nom == ide: return x
+        return None
+    
+    def grabaTabla(self, archSal):
+        with open(archSal, 'r') as aSal:
+            if aSal == None: return 
+
+        with open(archSal, 'w') as aSal:
+            for x in tabSimb:
+                aSal.write(x.nom +',' + x.clas + ',' + x.tip + ',' + \
+                           x.dim1 + ','+ x.dim2 + ',#')
+            aSal.close()
+        return
+
+class codigo():
+    def __init__(self, mnem, dir1, dir2):
+        self.mnemo = mnem
+        self.dir1 = dir1
+        self.dir2 = dir2
+
+linCod = 1
+
+class Programa():
+    cod = []
+    def insCodigo(self, mnemo, dir1, dir2):
+        global linCod
+        x = codigo(mnemo, dir1, dir2)
+        self.cod[linCod] = x
+        linCod = linCod + 1
+
+
+tabSimb = TabSimb()  
+
+prgmCod = Programa()
+
+pilaTipos = []
+
 def erra(terr, desc):
     global ren, colu
     global cERR
@@ -114,10 +206,17 @@ def scanner():
     return token, lexema
 
 def cte():
-    global tok, lex 
+    global tok, lex, prgmCod 
     if not(tok in tkCts):
         erra('Error de sintaxis', 'se esperaba Cte y llego '+ lex) 
-
+    else:
+        if tok == 'CtA' or tok == 'Ent' or tok == 'Dec':
+           prgmCod.insCodigo('LIT', lex, '0')
+        if tok == 'CtL':
+            if lex == 'verdadero':
+                prgmCod.insCodigo('LIT', 'V', '0')
+            elif lex == 'falso':
+                prgmCod.insCodigo('LIT', 'F', '0')
 
 def termino():
     global lex, tok
@@ -130,13 +229,20 @@ def termino():
         if lex != ')':
             erra('Error de Sintaxis', 'se espera cerrar ) y llego '+ lex)
     elif tok == 'Ide':
+        nomIde = lex
         tok, lex = scanner()
         if lex == '[': 
             tok, lex = scanner()
             expr()
             if lex != ']':
                 erra('Error Sintaxis', 'se esperaba cerrar ] y llego '+lex)
-    
+        elif lex == '(': pass
+        oIde = tabSimb.buscaSimbolo(nomIde)
+        if oIde != None:
+            pilaTipos.append(oIde.tip)
+        else:
+            erra("Error de Semantica", 'Identificador no declarado '+ nomIde) 
+            pilaTipos('I')
     elif tok == 'CtL' or tok == 'CtA' or tok == 'Dec' or tok == 'Ent': 
         cte()
     if lex != ')':  
@@ -209,12 +315,13 @@ def params():
 
 
 def gpoExp():
-    global tok, lex
+    global tok, lex, prgmCod
     if lex != ')':
         deli=','
         while deli == ',':
             if lex == ',': 
                 tok, lex = scanner()
+                prgmCod.insCodigo('OPR', '0', '20')
             expr()
             deli = lex
             #if deli == ',': 
@@ -224,7 +331,7 @@ def gpoExp():
 def leer(): pass
 
 def imprime(): 
-    global tok, lex 
+    global tok, lex, prgmCod
     tok, lex = scanner()
     if lex != '(':
         erra('Error de Sintaxis', 'se esperaba abrir ( y llego '+ lex)
@@ -233,10 +340,10 @@ def imprime():
     if lex != ')': tok, lex = scanner()
     if lex != ')':
         erra('Error de Sintaxis', 'se esperaba cerrar ) y llego '+ lex)
-    #genCod(linea, 'OPR 0, 20')
+    prgmCod.insCodigo('OPR', '0', '20')
 
 def imprimenl(): 
-    global tok, lex 
+    global tok, lex, prgmCod
     tok, lex = scanner()
     if lex != '(':
         erra('Error de Sintaxis', 'se esperaba abrir ( y llego '+ lex)
@@ -245,7 +352,7 @@ def imprimenl():
     if lex != ')': tok, lex = scanner()
     if lex != ')':
         erra('Error de Sintaxis', 'se esperaba cerrar ) y llego '+ lex)
-    #genCod(linea, 'OPR 0, 21')
+    prgmCod.insCodigo('OPR', '0', '21')
 
 
 def desde(): pass
@@ -260,10 +367,13 @@ def lmp(): pass
 
 def regresa(): pass
 
+def asigLfunc(): pass
+
 def comando(): 
     global tok, lex
-    #if lex == 'lee': leer()
-    if lex == 'imprime': imprime()
+    if tok == 'Ide': asigLfunc()
+    if lex == 'lee': leer()
+    elif lex == 'imprime': imprime()
     elif lex == 'imprimenl': imprimenl()
     elif lex == 'desde': desde()
     elif lex == 'mientras': mientras()
