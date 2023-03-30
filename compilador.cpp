@@ -105,8 +105,8 @@ int main() {
 
 // Definicion de los prototipos de funcion
 void erra(string terr, string desc) {
-    global ren, colu;
-    global cERR;
+    ren, colu;
+    cERR;
     cout << '[' << ren << ']' << '[' << colu << ']' << terr << desc << endl;
     cERR = true;
 }
@@ -127,7 +127,7 @@ int colCar(char x) {
 }
 
 pair<string, string> scanner() {
-    global entrada, ERR, ACP, idx, ren, colu;
+    entrada, ERR, ACP, idx, ren, colu;
     int estado = 0;
     string lexema = "";
     char c = "";
@@ -191,14 +191,14 @@ pair<string, string> scanner() {
 }
 
 void cte() {
-    global tok, lex;
+    tok, lex;
     if (find(tkCts, tkCts+4, tok) == tkCts+4) {
         erra("Error de sintaxis", "se esperaba Cte y llego " + lex);
     }
 }
 
 void termino() {
-    global lex, tok;
+    lex, tok;
     if (lex != '(' && tok != "Ide" && tok != "CtA" && tok != "CtL" && tok != "Ent" && tok != "Dec") {
         tie(tok, lex) = scanner();
     }
@@ -228,7 +228,7 @@ void termino() {
 }
 
 void signo() {
-    global lex, tok;
+    lex, tok;
     if (lex == '-') {
         tie(tok, lex) = scanner();
     }
@@ -236,7 +236,7 @@ void signo() {
 }
 
 void expo() {
-    global tok, lex;
+    tok, lex;
     char opr = '^';
     while (opr == '^') {
         signo();
@@ -245,7 +245,7 @@ void expo() {
 }
 
 void multi() {
-    global tok, lex;
+    tok, lex;
     char opr = '*';
     while (opr == '*' || opr == '/' || opr == '%') {
         expo();
@@ -254,7 +254,7 @@ void multi() {
 }
 
 void suma() {
-    global tok, lex;
+    tok, lex;
     char opr = '+';
     while (opr == '+' || opr == '-') {
         multi();
@@ -263,7 +263,7 @@ void suma() {
 }
 
 void oprel() {
-    global tok, lex;
+    tok, lex;
     char opr = '<';
     while (find(opRl, opRl+5, opr) != opRl+5) {
         suma();
@@ -272,7 +272,7 @@ void oprel() {
 }
 
 void opno() {
-    global lex, tok;
+    lex, tok;
     if (lex == "no") {
         tie(tok, lex) = scanner();
     }
@@ -280,7 +280,7 @@ void opno() {
 }
 
 void opy() {
-    global tok, lex;
+    tok, lex;
     string opr = "y";
     while (opr == "y") {
         opno();
@@ -289,7 +289,7 @@ void opy() {
 }
 
 void expr() {
-    global tok, lex;
+    tok, lex;
     string opr = "o";
     while (opr == "o") {
         opy();
@@ -298,17 +298,17 @@ void expr() {
 }
 
 void constVars() {
-    global entrada, idx, tok, lex;
+    entrada, idx, tok, lex;
     tie(tok, lex) = scanner();
 }
 
 void params() {
-    global entrada, lex, tok;
+    entrada, lex, tok;
     tie(tok, lex) = scanner();
 }
 
 void gpoExp() {
-    global tok, lex;
+    tok, lex;
     if (lex != ')') {
         char deli = ',';
         while (deli == ',') {
@@ -322,11 +322,23 @@ void gpoExp() {
 }
 
 void leer() {
-
+    tie(tok, lex) = scanner();
+    if (lex != '(') {
+        erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
+    }
+    tie(tok, lex) = scanner();
+    if (tok != "Ide") {
+        erra("Error de Sintaxis", "se esperaba un identificador y llego " + lex);
+    }
+    string var = lex; // store the variable name
+    tie(tok, lex) = scanner();
+    if (lex != ')') {
+        erra("Error de Sintaxis", "se esperaba cerrar ) y llego " + lex);
+    }
 }
 
 void imprime() {
-    global tok, lex;
+    tok, lex;
     tie(tok, lex) = scanner();
     if (lex != '(') {
         erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
@@ -340,7 +352,7 @@ void imprime() {
 }
 
 void imprimenl() {
-    global tok, lex;
+    tok, lex;
     tie(tok, lex) = scanner();
     if (lex != '(') {
         erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
@@ -378,7 +390,7 @@ void regresa() {
 }
 
 void comando() {
-    global tok, lex;
+    tok, lex;
     if (tok == "Ide") asigLfunc();
     if (lex == "lee") leer();
     else if (lex == "imprime") imprime();
@@ -394,7 +406,7 @@ void comando() {
 }
 
 void blkcmd() {
-    global lex, tok;
+    lex, tok;
     tie(tok, lex) = scanner();
     if (lex != ';' && lex != '{') {
         comando();
@@ -408,7 +420,7 @@ void blkcmd() {
 }
 
 void estatutos() {
-    global tok, lex;
+    tok, lex;
     char cbk = '{';
     while (cbk != '}') {
         if (lex != ';') comando();
@@ -419,7 +431,7 @@ void estatutos() {
 }
 
 void blkFunc() {
-    global lex, tok;
+    lex, tok;
     if (lex != '{') erra("Error de Sintaxis", "se esperaba abrir \"{\" y llego " + lex);
     tie(tok, lex) = scanner();
     if (lex != '}') estatutos();
@@ -427,7 +439,7 @@ void blkFunc() {
 }
 
 void funcs() {
-    global entrada, idx, tok, lex, tipo, bPrinc;
+    entrada, idx, tok, lex, tipo, bPrinc;
     if (find(tipo, tipo+5, lex) == tipo+5) {
         erra("Error Sintactico", "Se esperaba tipo" + str(tipo));
     }
@@ -452,6 +464,6 @@ void prgm() {
 }
 
 void parser() {
-    global entrada, idx, tok, lex;
+    entrada, idx, tok, lex;
     prgm();
 }
