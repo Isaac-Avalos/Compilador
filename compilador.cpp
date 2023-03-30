@@ -11,8 +11,8 @@ const int ERR = -1;
 const int ACP = 99;
 int idx = 0;
 bool cERR = false;
-char tok = '';
-string lex = '';
+char tok = '\0';
+string lex = "";
 bool bPrinc = false;
 int ren = 1;
 int colu = 0;
@@ -105,7 +105,6 @@ int main() {
 
 // Definicion de los prototipos de funcion
 void erra(string terr, string desc) {
-    ren, colu;
     cERR;
     cout << '[' << ren << ']' << '[' << colu << ']' << terr << desc << endl;
     cERR = true;
@@ -127,7 +126,6 @@ int colCar(char x) {
 }
 
 pair<string, string> scanner() {
-    entrada, ERR, ACP, idx, ren, colu;
     int estado = 0;
     string lexema = "";
     char c = "";
@@ -191,14 +189,12 @@ pair<string, string> scanner() {
 }
 
 void cte() {
-    tok, lex;
     if (find(tkCts, tkCts+4, tok) == tkCts+4) {
         erra("Error de sintaxis", "se esperaba Cte y llego " + lex);
     }
 }
 
 void termino() {
-    lex, tok;
     if (lex != '(' && tok != "Ide" && tok != "CtA" && tok != "CtL" && tok != "Ent" && tok != "Dec") {
         tie(tok, lex) = scanner();
     }
@@ -228,7 +224,6 @@ void termino() {
 }
 
 void signo() {
-    lex, tok;
     if (lex == '-') {
         tie(tok, lex) = scanner();
     }
@@ -236,7 +231,6 @@ void signo() {
 }
 
 void expo() {
-    tok, lex;
     char opr = '^';
     while (opr == '^') {
         signo();
@@ -245,7 +239,6 @@ void expo() {
 }
 
 void multi() {
-    tok, lex;
     char opr = '*';
     while (opr == '*' || opr == '/' || opr == '%') {
         expo();
@@ -254,7 +247,6 @@ void multi() {
 }
 
 void suma() {
-    tok, lex;
     char opr = '+';
     while (opr == '+' || opr == '-') {
         multi();
@@ -263,7 +255,6 @@ void suma() {
 }
 
 void oprel() {
-    tok, lex;
     char opr = '<';
     while (find(opRl, opRl+5, opr) != opRl+5) {
         suma();
@@ -272,7 +263,6 @@ void oprel() {
 }
 
 void opno() {
-    lex, tok;
     if (lex == "no") {
         tie(tok, lex) = scanner();
     }
@@ -280,7 +270,6 @@ void opno() {
 }
 
 void opy() {
-    tok, lex;
     string opr = "y";
     while (opr == "y") {
         opno();
@@ -289,7 +278,6 @@ void opy() {
 }
 
 void expr() {
-    tok, lex;
     string opr = "o";
     while (opr == "o") {
         opy();
@@ -298,17 +286,14 @@ void expr() {
 }
 
 void constVars() {
-    entrada, idx, tok, lex;
     tie(tok, lex) = scanner();
 }
 
 void params() {
-    entrada, lex, tok;
     tie(tok, lex) = scanner();
 }
 
 void gpoExp() {
-    tok, lex;
     if (lex != ')') {
         char deli = ',';
         while (deli == ',') {
@@ -338,7 +323,6 @@ void leer() {
 }
 
 void imprime() {
-    tok, lex;
     tie(tok, lex) = scanner();
     if (lex != '(') {
         erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
@@ -352,7 +336,6 @@ void imprime() {
 }
 
 void imprimenl() {
-    tok, lex;
     tie(tok, lex) = scanner();
     if (lex != '(') {
         erra("Error de Sintaxis", "se esperaba abrir ( y llego " + lex);
@@ -390,7 +373,6 @@ void regresa() {
 }
 
 void comando() {
-    tok, lex;
     if (tok == "Ide") asigLfunc();
     if (lex == "lee") leer();
     else if (lex == "imprime") imprime();
@@ -406,7 +388,6 @@ void comando() {
 }
 
 void blkcmd() {
-    lex, tok;
     tie(tok, lex) = scanner();
     if (lex != ';' && lex != '{') {
         comando();
@@ -420,7 +401,6 @@ void blkcmd() {
 }
 
 void estatutos() {
-    tok, lex;
     char cbk = '{';
     while (cbk != '}') {
         if (lex != ';') comando();
@@ -431,7 +411,6 @@ void estatutos() {
 }
 
 void blkFunc() {
-    lex, tok;
     if (lex != '{') erra("Error de Sintaxis", "se esperaba abrir \"{\" y llego " + lex);
     tie(tok, lex) = scanner();
     if (lex != '}') estatutos();
@@ -439,7 +418,6 @@ void blkFunc() {
 }
 
 void funcs() {
-    entrada, idx, tok, lex, tipo, bPrinc;
     if (find(tipo, tipo+5, lex) == tipo+5) {
         erra("Error Sintactico", "Se esperaba tipo" + str(tipo));
     }
@@ -464,6 +442,5 @@ void prgm() {
 }
 
 void parser() {
-    entrada, idx, tok, lex;
     prgm();
 }
