@@ -11,6 +11,37 @@
 using namespace std;
 
 // Todas las variables necesarias
+
+string cTipo[] = {"E=E", "A=A", "R=R", "L=L", "R=E",
+        "E+E", "E+R", "R+E", "R+R", "A+A",
+        "E-E", "E-R", "R-E", "R-R",
+        "E*E", "E*R", "R*E", "R*R",
+        "E/E", "E/R", "R/E", "R/R",
+        "E\37E", "-E", "-R",
+        "LyL", "LoL", "noL",
+        "E>E", "R>E", "E>R", "R>R",
+        "E<E", "R<E", "E<R", "R<R",
+        "E>=E", "R>=E", "E>=R", "R>=R",
+        "E<=E", "R<=E", "E<=R", "R<=R",
+        "E<>E", "R<>E", "E<>R", "R<>R", "A<>A",
+        "E==E", "R==E", "E==R", "R==R", "A==A"
+};
+
+string tipoR[] = {"",  "",  "",  "",  "",
+        "E", "R", "R", "R", "A",
+        "E", "R", "R", "R",
+        "E", "R", "R", "R",
+        "R", "R", "R", "R",
+                                          "E", "E", "R",
+                                          "L", "L", "L",
+                                          "L", "L", "L", "L",
+                                          "L", "L", "L", "L",
+                                          "L", "L", "L", "L",
+                                          "L", "L", "L", "L", "L",
+                                          "L", "L", "L", "L", "L",
+                                          "L", "L", "L", "L", "L"
+};
+
 const int ERR = -1;
 const int ACP = 99;
 int idx = 0;
