@@ -1,3 +1,4 @@
+import os
 ERR = -1
 ACP = 99
 idx = 0
@@ -29,14 +30,14 @@ tipoR = ["",  "",  "",  "",  "",
         "E", "R", "R", "R",
         "E", "R", "R", "R",
         "R", "R", "R", "R",
-                                          "E", "E", "R",
-                                          "L", "L", "L",
-                                          "L", "L", "L", "L",
-                                          "L", "L", "L", "L",
-                                          "L", "L", "L", "L",
-                                          "L", "L", "L", "L",
-                                          "L", "L", "L", "L", "L",
-                                          "L", "L", "L", "L", "L"
+        "E", "E", "R",
+        "L", "L", "L",
+        "L", "L", "L", "L",
+        "L", "L", "L", "L",
+        "L", "L", "L", "L",
+        "L", "L", "L", "L",
+        "L", "L", "L", "L", "L",
+        "L", "L", "L", "L", "L"
 ]
 
 def buscaTipo(cadt):
@@ -47,33 +48,55 @@ def buscaTipo(cadt):
 
 class objPrgm():
     def __init__(self, nom, cls, tip, dim1, dim2, apv) -> None:
+        self.dim2apv = []
+        self.apv = ["0" for i in range(1000)]
         self.nombre = nom
         self.clase = cls
         self.tipo = tip
         self.dim1 = dim1
         self.dim2 = dim2
-        self.apv = apv
+        self.apv[int(dim1)] = apv
+        return
 
 class TabSimb():
     arreglo = []
     def inserSimbolo(self, nom, cls, tip, dim1, dim2, apv):
+        ox = self.buscaSimbolo(nom)
+        if ox != None:
+            if ox.clase == 'V': cls = 'Variable'
+            elif ox.clase == 'C': cls = 'Constante'
+            elif ox.clase == 'F': cls = 'Funcion'
+            elif ox.clase == 'I': cls = 'Indefinido'
+            elif ox.clase == 'L': cls = 'Variable Local'
+            if ox.tipo == 'E': tp = 'Entero'
+            elif ox.tipo == 'D': tp = 'Decimal'
+            elif ox.tipo == 'P': tp = 'Palabra'
+            elif ox.tipo == 'I': tp = 'Nulo o Indefinido'
+            elif ox.tipo == 'L': tp = 'Logico'
+            erra('Error Semantico ' + nom + ' ya esta declarado como', cls + ' del tipo ' + tp)
+            return
         obj = objPrgm(nom, cls, tip, dim1, dim2, apv)
         self.arreglo.append( obj )
+        return
 
     def buscaSimbolo(self, ide):
         for x in self.arreglo:
-            if x.nom == ide: return x
+            if x.nombre == ide: return x
         return None
     
     def grabaTabla(self, archSal):
-        with open(archSal, 'r') as aSal:
-            if aSal == None: return 
-
         with open(archSal, 'w') as aSal:
-            for x in tabSimb:
-                aSal.write(x.nom +',' + x.clas + ',' + x.tip + ',' + \
-                           x.dim1 + ','+ x.dim2 + ',#')
+            for x in self.arreglo:
+                aSal.write(x.nombre +',' + x.clase + ',' + x.tipo + ',' + \
+                           x.dim1 + ','+ x.dim2 + ',' + x.apv[0] + ',#\n')
+            aSal.write('@\n')
             aSal.close()
+        return
+    
+    def impTabSim(self):
+        for x in self.arreglo:
+            print(x.nombre + ',' + x.clase + ',' + x.tipo + ',' + x.dim1 + ',' + x.dim2 + ',' + x.apv[0]+ ',#')
+        print('@')
         return
 
 class codigo():
@@ -82,15 +105,46 @@ class codigo():
         self.dir1 = dir1
         self.dir2 = dir2
 
-linCod = 1
+linCod = 0
 
 class Programa():
     cod = []
+    def __init__(self):
+        for i in range(10000):
+            x = codigo('LIT', '0', '0')
+            self.cod.append(x)
+        return
+
     def insCodigo(self, mnemo, dir1, dir2):
         global linCod
+        linCod = linCod + 1
         x = codigo(mnemo, dir1, dir2)
         self.cod[linCod] = x
-        linCod = linCod + 1
+        return
+    
+    def impCodigo(self):
+        global linCod
+        for i in range(linCod + 1):
+           if i > 0:
+              x = self.cod[i]
+              print(str(i)+ ' '+x.mnemo + ' ' + x.dir1 + ', ' + x.dir2)
+        return
+
+    def grabaCodigo(self, archSal):
+        global linCod
+        with open(archSal, 'r') as aSal:
+            if aSal == None: return 
+
+        if linCod > 0:
+            with open(archSal, 'a') as aSal:
+                for i in range(linCod + 1):
+                    if i > 0:
+                        x = self.cod[i]
+                        aSal.write(str(i)+ ' ' + x.mnemo + ' ' + x.dir1 + ',' + x.dir2 + '\n')
+
+            aSal.close()
+        return
+
 
 
 tabSimb = TabSimb()  
@@ -185,7 +239,7 @@ def scanner():
 
     if estado != ERR and estado != ACP:
         estA = estado
-
+    
     if lexema in key: token = 'Res'
     elif lexema in opl: token = 'OpL'
     elif lexema in ctl: token = 'CtL'
@@ -202,7 +256,6 @@ def scanner():
     if token == 'Ntk':
         print('estA=', estA, 'estado=', estado)
 
-
     return token, lexema
 
 def cte():
@@ -211,6 +264,7 @@ def cte():
         erra('Error de sintaxis', 'se esperaba Cte y llego '+ lex) 
     else:
         if tok == 'CtA' or tok == 'Ent' or tok == 'Dec':
+           if tok == 'CtA': lex = lex[1:len(lex)-1]
            prgmCod.insCodigo('LIT', lex, '0')
         if tok == 'CtL':
             if lex == 'verdadero':
@@ -236,16 +290,17 @@ def termino():
             expr()
             if lex != ']':
                 erra('Error Sintaxis', 'se esperaba cerrar ] y llego '+lex)
-        elif lex == '(': pass
+        elif lex == '(': asigLfunc()
+        prgmCod.insCodigo('LOD', nomIde, '0')
         oIde = tabSimb.buscaSimbolo(nomIde)
         if oIde != None:
-            pilaTipos.append(oIde.tip)
+            pilaTipos.append(oIde.tipo)
         else:
             erra("Error de Semantica", 'Identificador no declarado '+ nomIde) 
             pilaTipos('I')
     elif tok == 'CtL' or tok == 'CtA' or tok == 'Dec' or tok == 'Ent': 
         cte()
-    if lex != ')':  
+    if lex != ')' and lex != ',': 
         tok, lex = scanner()
 
 def signo():
@@ -304,28 +359,160 @@ def expr():
         opy()
         opr = lex
 
+def dimen(): pass
+
+def constants():
+    global tok, lex
+    tok, lex = scanner()
+    if lex in tipo:
+            idTipo = lex
+            tok, lex = scanner()
+    while tok == 'Ide':
+        Iden = lex
+        tok, lex = scanner()
+        if lex == '[':
+            tok, lex = scanner()
+            dimen()
+        elif lex == '=':
+            tok, lex = scanner()
+            if idTipo == 'entero': idTipo = 'E'
+            elif idTipo == 'decimal': idTipo = 'D'
+            elif idTipo == 'logico': idTipo = 'L'
+            elif idTipo == 'palabra': idTipo = 'P'
+            if idTipo == 'P': lex = lex[1:len(lex)-1]
+            tabSimb.inserSimbolo(Iden, 'C', idTipo, '0', '0', lex)
+        
+        tok, lex = scanner()
+        if lex == ',':
+            tok, lex = scanner()
+
+    if lex != ';':
+         erra('Error de Sintaxis', 'se esperaba <;> y llego '+ lex)
+
+    return
 
 def constVars():
-        global entrada, idx, tok, lex
-        tok, lex = scanner()
+        global idx, tok, lex, bPrinc
+        if lex == 'constante': constants()
+        else:
+            if lex in tipo:
+                idTipo = lex
+                if idTipo == 'entero': idTipo = 'E'
+                elif idTipo == 'decimal': idTipo = 'D'
+                elif idTipo  == 'logico': idTipo = 'L'
+                elif idTipo == 'palabra': idTipo = 'P'
+            else: erra('se esperaba tipo '+ str(tipo), ' y llego '+lex)
+            tok, lex = scanner()
+            nIde = lex
+            if tok != 'Ide': erra('Se esperaba Identificador', 'y llego '+ lex)
+            tok, lex = scanner()
+            if lex == ',':
+                tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', '0')
+                tok, lex = scanner()
+                while tok == 'Ide':
+                    nIde = lex
+                    tok, lex = scanner()
+                    if lex != ',' and lex  != '=' and lex != ';': erra('Error de Sintaxis se esperaba <, = ;>', 'y llego '+ lex)
+                    elif lex == ',':
+                        tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', '0')
+                        tok, lex = scanner()
+                    elif lex == '=':
+                        tok, lex = scanner()
+                        if tok != 'CtA' and idTipo == 'P': erra("Error Semantico, se esperaba Cte palabra ", "y llego "+ lex)
+                        elif tok != 'CtL' and idTipo == 'L': erra("Error Semantico, se esperaba Cte logico ", "y llego "+ lex)
+                        elif tok != 'Ent' and idTipo == 'E': erra("Error Semantico, se esperaba Cte entero ", "y llego "+ lex)
+                        elif tok != 'Dec' and idTipo == 'D': erra("Error Semantico, se esperaba Cte decimal ", "y llego "+ lex)
+                        else:
+                            if tok == 'CtA': lex = lex[1:len(lex)-1] 
+                            tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', lex)
+                        tok, lex = scanner()
+                        if lex == ',': tok, lex = scanner()
+                if lex == ';': tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', '0')        
+            elif lex == '=':
+                tok, lex = scanner();
+                if tok != 'CtA' and idTipo == 'P': erra("Error Semantico, se esperaba Cte palabra ", "y llego "+ lex)
+                elif tok != 'CtL' and idTipo == 'L': erra("Error Semantico, se esperaba Cte logico ", "y llego "+ lex)
+                elif tok != 'Ent' and idTipo == 'E': erra("Error Semantico, se esperaba Cte entero ", "y llego "+ lex)
+                elif tok != 'Dec' and idTipo == 'D': erra("Error Semantico, se esperaba Cte decimal ", "y llego "+ lex)
+                else:
+                    if tok == 'CtA': lex = lex[1:len(lex)-1] 
+                    tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', lex)
+                tok, lex = scanner()
+                if lex != ',' and lex != ';': erra('Error de Sintaxis, se esperaba , o ;', 'y llego '+ lex)
+                elif lex == ',':
+                    tok, lex = scanner()
+                    while tok == 'Ide':
+                        nIde = lex
+                        tok, lex = scanner()
+                        if lex != ',' and lex  != '=' and lex != ';': erra('Error de Sintaxis se esperaba , =, ;', 'y llego '+ lex)
+                        elif lex == ',':
+                            tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', '0')
+                            tok, lex = scanner()
+                        elif lex == '=':
+                            tok, lex = scanner()
+                            if tok != 'CtA' and idTipo == 'P': erra("Error Semantico, se esperaba Cte palabra ", "y llego "+ lex)
+                            elif tok != 'CtL' and idTipo == 'L': erra("Error Semantico, se esperaba Cte logico ", "y llego "+ lex)
+                            elif tok != 'Ent' and idTipo == 'E': erra("Error Semantico, se esperaba Cte entero ", "y llego "+ lex)
+                            elif tok != 'Dec' and idTipo == 'D': erra("Error Semantico, se esperaba Cte decimal ", "y llego "+ lex)
+                            else:
+                                if tok == 'CtA': lex = lex[1:len(lex)-1] 
+                                tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', lex)
+                                tok, lex = scanner()
+                                if lex != ',' and lex != ';': erra("Error de Sintaxis se esperaba ,", 'y llego '+lex)
+                                if lex == ',':tok, lex = scanner()
+                    if lex != ';': erra('Error de Sintaxis, se esperaba ; ', 'y llego '+lex)  
+                    else: tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', '0')   
+            elif lex == '(': 
+                if bPrinc and nIde == 'principal': erra('Error de Semantica', 'la Funcion Principal ya esta definida') 
+                if nIde == 'principal': 
+                    bPrinc = True
+                    tabSimb.inserSimbolo('_P', 'I', 'I', str(linCod + 1), '0', '0')
+                tok, lex = scanner()      
+                funcs()
+                if nIde == 'principal': 
+                    prgmCod.insCodigo('OPR', '0', '0')
+                    idTipo = 'I'
+            else:
+                if lex == ';':
+                    tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', '0')
+                while lex != ';':
+                    if lex == '[': dimen()
+                    elif lex == ',':
+                        tabSimb.inserSimbolo(nIde, 'V', idTipo, '0', '0', '0')
+                        tok, lex = scanner()
+                        if tok == 'Ide':
+                            nIde = lex
+                        if tok != 'Ide': erra('Se esperaba Identificador', 'y llego '+ lex)
+                        tok, lex = scanner()
+                tok, lex = scanner()
+            idClase = 'V'
+            if nIde == 'principal': idClase = 'F'
+            if tabSimb.buscaSimbolo(nIde) == None:
+                tabSimb.inserSimbolo(nIde, idClase, idTipo, '0', '0', '0')
+        return
+
+                        
+        
+            
+
+
 
 def params(): 
     global entrada, lex, tok
     tok, lex = scanner()
+    
 
 
 def gpoExp():
     global tok, lex, prgmCod
-    if lex != ')':
-        deli=','
-        while deli == ',':
-            if lex == ',': 
-                tok, lex = scanner()
-                prgmCod.insCodigo('OPR', '0', '20')
-            expr()
+    deli=','
+    while deli == ',':
+        expr()
+        if lex == ',': 
             deli = lex
-            #if deli == ',': 
-                #genCod(linea, 'OPR 0, 20)
+            prgmCod.insCodigo('OPR', '0', '20')
+            tok, lex = scanner()
+        elif lex == ')': break
 
 
 def leer(): pass
@@ -336,8 +523,9 @@ def imprime():
     if lex != '(':
         erra('Error de Sintaxis', 'se esperaba abrir ( y llego '+ lex)
     tok, lex = scanner()
-    if lex != ')': gpoExp()
-    if lex != ')': tok, lex = scanner()
+    if lex == ')': prgmCod.insCodigo('LIT', '', '0')
+    elif lex != ')': 
+        gpoExp()
     if lex != ')':
         erra('Error de Sintaxis', 'se esperaba cerrar ) y llego '+ lex)
     prgmCod.insCodigo('OPR', '0', '20')
@@ -348,8 +536,9 @@ def imprimenl():
     if lex != '(':
         erra('Error de Sintaxis', 'se esperaba abrir ( y llego '+ lex)
     tok, lex = scanner()
-    if lex != ')': gpoExp()
-    if lex != ')': tok, lex = scanner()
+    if lex == ')': prgmCod.insCodigo('LIT', '', '0')
+    if lex != ')': 
+        gpoExp()
     if lex != ')':
         erra('Error de Sintaxis', 'se esperaba cerrar ) y llego '+ lex)
     prgmCod.insCodigo('OPR', '0', '21')
@@ -363,7 +552,8 @@ def si(): pass
 
 def repite(): pass
 
-def lmp(): pass
+def lmp():
+    prgmCod.insCodigo('OPR', '0', '18')
 
 def regresa(): pass
 
@@ -414,28 +604,20 @@ def blkFunc():
 
 
 def funcs():
-        global entrada, idx, tok, lex, tipo, bPrinc
-        if not(lex in tipo):
-            erra('Error Sintactico', 'Se esperaba tipo' + str(tipo))
-        tok, lex = scanner()
-        if tok != 'Ide': erra('Error Sintaxis', 'Se esperaba Nombre Funcion y llego ' + lex)
-        if bPrinc: erra('Error de Semantica', 'la Funcion Principal ya esta definida') 
-        if lex == 'principal': bPrinc = True
-        tok, lex = scanner()      
-        if lex != '(': erra('Error de Sintaxis', 'se esperaba parentisis abierto \"(\" y llego '+ lex) 
-        tok, lex = scanner()      
+        global tok, lex, tipo, bPrinc
         if lex != ')': params()
         if lex != ')': erra('Error de Sintaxis', 'se esperaba parentisis cerrado \")\"')
         tok, lex = scanner()
         blkFunc()
 
+
 def prgm():
+    global entrada, idx, tok, lex
     while len(entrada) > 0 and  idx < len(entrada):
+        tok, lex = scanner()
         constVars()
-        funcs()
 
 def parser():
-    global entrada, idx, tok, lex
     prgm()
 
 if __name__ == '__main__':
@@ -449,4 +631,11 @@ if __name__ == '__main__':
         
     print(entrada)
     parser()
-    if not(cERR): print('Programa COMPILO con EXITO') 
+    archs = arche[:len(arche)-4]
+    archsl = archs + '.eje'
+    
+    if not(cERR): 
+        print('Programa COMPILO con EXITO') 
+        tabSimb.grabaTabla(archsl)
+        prgmCod.grabaCodigo(archsl)
+        os.system('Inter ' + archs)
