@@ -160,7 +160,7 @@ def erra(terr, desc):
     cERR = True
 
 matran=[
-    #let  dig  del  opa   <    >    =    .   "
+    #let  dig  del  opa   <    >    =    .    "
     [1,   2,   6,   5,    10,  8,   7,  ERR,  12], #0
     [1,   1,   ACP, ACP, ACP, ACP, ACP, ACP, ACP], #1
     [ACP, 2,   ACP, ACP, ACP, ACP, ACP,  3,  ACP], #2
@@ -264,9 +264,14 @@ def cte():
         erra('Error de sintaxis', 'se esperaba Cte y llego '+ lex) 
     else:
         if tok == 'CtA' or tok == 'Ent' or tok == 'Dec':
-           if tok == 'CtA': lex = lex[1:len(lex)-1]
+           if tok == 'Dec': pilaTipos('D')
+           if tok == 'Ent': pilaTipos('E')
+           if tok == 'CtA': 
+               lex = lex[1:len(lex)-1]
+               pilaTipos.append('P')
            prgmCod.insCodigo('LIT', lex, '0')
         if tok == 'CtL':
+            pilaTipos.append('L')
             if lex == 'verdadero':
                 prgmCod.insCodigo('LIT', 'V', '0')
             elif lex == 'falso':
@@ -284,6 +289,14 @@ def termino():
             erra('Error de Sintaxis', 'se espera cerrar ) y llego '+ lex)
     elif tok == 'Ide':
         nomIde = lex
+
+        x = tabSimb.buscaSimbolo()
+        if x != None:
+            pilaTipos.append(x.tipo)
+        else:
+            pilaTipos.append('I')
+            erra('Error Semantico', 'Identificador no declarado ' + nomIde)
+
         tok, lex = scanner()
         if lex == '[': 
             tok, lex = scanner()
@@ -491,10 +504,6 @@ def constVars():
                 tabSimb.inserSimbolo(nIde, idClase, idTipo, '0', '0', '0')
         return
 
-                        
-        
-            
-
 
 
 def params(): 
@@ -557,11 +566,21 @@ def lmp():
 
 def regresa(): pass
 
-def asigLfunc(): pass
+def Lfunc(): pass
+
+def asigna(): 
+    nomIde = lex
+    x = tabSimb.buscaSimbolo(nomIde)
+    if x != None:
+        pilaTipos.append(x.tipo)
+    else:
+        erra('Error de semantica', 'Identificador no declarado' + nomIde)
+        pilaTipos.append('I')
+
 
 def comando(): 
     global tok, lex
-    if tok == 'Ide': asigLfunc()
+    if tok == 'Ide': asigna()
     if lex == 'lee': leer()
     elif lex == 'imprime': imprime()
     elif lex == 'imprimenl': imprimenl()
