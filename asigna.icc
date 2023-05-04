@@ -1,0 +1,11 @@
+entero x=5;
+decimal d=2.3;
+palabra p="hola";
+logico band=falso;
+
+nulo principal() {
+    x = 12.5;
+    d = x;
+    p = 15;
+    band = d;
+}

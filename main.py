@@ -10,27 +10,27 @@ ren = 1
 colu = 0
 pTipos = []
 
-cTipo = ["E=E", "A=A", "R=R", "L=L", "R=E",
-        "E+E", "E+R", "R+E", "R+R", "A+A",
-        "E-E", "E-R", "R-E", "R-R",
-        "E*E", "E*R", "R*E", "R*R",
-        "E/E", "E/R", "R/E", "R/R",
-        "E\37E", "-E", "-R",
+cTipo = ["E=E", "P=P", "D=D", "L=L", "D=E",
+        "E+E", "E+D", "D+E", "D+D", "P=P",
+        "E-E", "E-D", "D-E", "D-D",
+        "E*E", "E*D", "D*E", "D*D",
+        "E/E", "E/D", "D/E", "D/D",
+        "E%E", "-E", "-D",
         "LyL", "LoL", "noL",
-        "E>E", "R>E", "E>R", "R>R",
-        "E<E", "R<E", "E<R", "R<R",
-        "E>=E", "R>=E", "E>=R", "R>=R",
-        "E<=E", "R<=E", "E<=R", "R<=R",
-        "E<>E", "R<>E", "E<>R", "R<>R", "A<>A",
-        "E==E", "R==E", "E==R", "R==R", "A==A"
+        "E>E", "D>E", "E>D", "D>D",
+        "E<E", "D<E", "E<D", "D<D",
+        "E>=E", "D>=E", "E>=D", "D>=D",
+        "E<=E", "D<=E", "E<=D", "D<=D",
+        "E<>E", "D<>E", "E<>D", "D<>D", "P<>P",
+        "E==E", "D==E", "E==D", "D==D", "P==P"
 ]
 
 tipoR = ["",  "",  "",  "",  "",
-        "E", "R", "R", "R", "A",
-        "E", "R", "R", "R",
-        "E", "R", "R", "R",
-        "R", "R", "R", "R",
-        "E", "E", "R",
+        "E", "D", "D", "D", "P",
+        "E", "D", "D", "D",
+        "E", "D", "D", "D",
+        "D", "D", "D", "D",
+        "E", "E", "D",
         "L", "L", "L",
         "L", "L", "L", "L",
         "L", "L", "L", "L",
@@ -41,7 +41,7 @@ tipoR = ["",  "",  "",  "",  "",
 ]
 
 def buscaTipo(cadt):
-    for i in range(55):
+    for i in range(len(cTipo)):
         if cTipo[i]==cadt: return i
     return -1
 
@@ -259,13 +259,13 @@ def scanner():
     return token, lexema
 
 def cte():
-    global tok, lex, prgmCod 
+    global tok, lex, prgmCod, pilaTipos, tabSimb
     if not(tok in tkCts):
         erra('Error de sintaxis', 'se esperaba Cte y llego '+ lex) 
     else:
         if tok == 'CtA' or tok == 'Ent' or tok == 'Dec':
-           if tok == 'Dec': pilaTipos('D')
-           if tok == 'Ent': pilaTipos('E')
+           if tok == 'Dec': pilaTipos.append('D')
+           if tok == 'Ent': pilaTipos.append('E')
            if tok == 'CtA': 
                lex = lex[1:len(lex)-1]
                pilaTipos.append('P')
@@ -278,9 +278,9 @@ def cte():
                 prgmCod.insCodigo('LIT', 'F', '0')
 
 def termino():
-    global lex, tok
+    global lex, tok, tabSimb, pilaTipos
     if lex != '(' and tok != 'Ide' and tok != 'CtA' and \
-        tok != 'CtL' and tok != 'Ent' and 'Dec':
+        tok != 'CtL' and tok != 'Ent' and tok != 'Dec':
         tok, lex = scanner()
     if lex == '(':
         tok, lex = scanner()
@@ -555,7 +555,18 @@ def imprimenl():
 
 def desde(): pass
 
-def mientras(): pass
+def mientras():'''
+    global tok, lex
+    tok, lex = scanner()
+
+    if lex == 'que':
+        expr()
+    if lex == '{':
+        blkcmd()
+    if lex != '':
+        
+        '''
+
 
 def si(): pass
 
@@ -568,14 +579,42 @@ def regresa(): pass
 
 def Lfunc(): pass
 
+def udim(): pass
+
 def asigna(): 
+    global tok, lex, tabSimb, pilaTipos
     nomIde = lex
+
+    tabSimb.impTabSim()
     x = tabSimb.buscaSimbolo(nomIde)
     if x != None:
         pilaTipos.append(x.tipo)
     else:
         erra('Error de semantica', 'Identificador no declarado' + nomIde)
         pilaTipos.append('I')
+    tok, lex = scanner()
+    if lex == '[': udim()
+    if lex == '=': 
+        pilaTipos.append('=')
+    else:
+        erra('Error de sintaxis', 'se esperaba = y llego' + lex)
+    tok, lex = scanner()
+    expr()
+    # Valida tipo en asignacion
+    tipd = pilaTipos.pop()
+    tips = pilaTipos.pop() + tipd
+    tipi = pilaTipos.pop()
+    tips = tipi + tips
+    i = buscaTipo(tips)
+    if i >=0 and tipoR[i] != '':
+        pilaTipos.append(tipoR[i])
+    elif i < 0:
+        erra('Error semantico', ' conflicto en tipos en asignacion de ' + tipi + ' = ' + tipd)
+
+
+
+
+
 
 
 def comando(): 
