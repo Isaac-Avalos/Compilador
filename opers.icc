@@ -1,0 +1,6 @@
+entero x = 10;
+decimal d = 12.5;
+
+nulo principal() {
+    x = x + d * 8;
+}

@@ -290,7 +290,7 @@ def termino():
     elif tok == 'Ide':
         nomIde = lex
 
-        x = tabSimb.buscaSimbolo()
+        x = tabSimb.buscaSimbolo(nomIde)
         if x != None:
             pilaTipos.append(x.tipo)
         else:
@@ -310,7 +310,7 @@ def termino():
             pilaTipos.append(oIde.tipo)
         else:
             erra("Error de Semantica", 'Identificador no declarado '+ nomIde) 
-            pilaTipos('I')
+            pilaTipos.append('I')
     elif tok == 'CtL' or tok == 'CtA' or tok == 'Dec' or tok == 'Ent': 
         cte()
     if lex != ')' and lex != ',': 
@@ -335,15 +335,44 @@ def multi():
     global tok, lex
     opr = '*'
     while opr == '*' or opr == '/' or opr == '%':
+        opr = ''
         expo()
+        if opr == '*' or opr == '/' or opr == '%':
+            tipd = pilaTipos.pop()
+            ope = pilaTipos.pop()
+            tipi = pilaTipos.pop()
+            tipr = pilaTipos.pop() + ope + tipd
+            i = buscaTipo(tipr)
+            if i >= 0:
+                pilaTipos.append(tipoR[i])
+            else:
+                erra('Error Semantico ', 'conflicto en operacion ' + tipi + ' ' + ope + ' ' + tipd)
+                pilaTipos.append('I')
         opr = lex
+        if opr == '*' or opr == '/' or opr == '%':
+            pilaTipos.append(opr)
 
 def suma():
     global tok, lex
     opr = '+'
     while opr == '+' or opr == '-':
+        opr = ''
         multi()
+        if opr == '+' or opr == '-':
+            tipd = pilaTipos.pop()
+            ope = pilaTipos.pop()
+            tipi = pilaTipos.pop()
+            tipr = pilaTipos.pop() + ope + tipd
+            i = buscaTipo(tipr)
+            if i >= 0:
+                pilaTipos.append(tipoR[i])
+            else:
+                erra('Error Semantico ', 'conflicto en operacion ' + tipi + ' ' + ope + ' ' + tipd)
+                pilaTipos.append('I')
         opr = lex
+        # se anadio esta parte y lo de opr = '' para todas las operaciones
+        if opr == '+' or opr == '-':
+            pilaTipos.append(opr)
 
 def oprel():
     global tok, lex
